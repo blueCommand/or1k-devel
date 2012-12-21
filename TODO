@@ -1,0 +1,23 @@
+#### PROGRESS
+
+- Port eglibc!
+
+
+#### DELAYED
+
+- Why does CFI imply that .eh_frame is always included?
+> If I solve this, I can probably remove the ugly -fno-dwarf-asm-thing in gcc
+> Normal gcc includes .eh_frame as well - perhaps it should be included?
+> 
+> A good thing would probably be to compile gcc for x86_54 and compare the outputed crtendS.c with that of openrisc
+
+x64 uses -fno-asynchronous-unwind-tables (as we already knew) which fixes crtstuff. So we're on the right track.
+Including gnu-user.h added GNU_EH_FRAMES as well which is nice.
+
+
+#### DONE
+
+- GNU_STACK - do we want it? How?
+- Is relro working?
+- Is CFI working?
+
