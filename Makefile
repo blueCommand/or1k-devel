@@ -4,7 +4,7 @@ all: or1k-gcc-uclibc
 
 or1k-clean:
 	rm -fr /srv/compilers/openrisc-devel/*
-	rm -f or1k-*
+	rm -f or1k-* || true
 
 ref-clean:
 	rm -fr /srv/compilers/openrisc-devel-ref/*
