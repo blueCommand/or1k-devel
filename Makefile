@@ -1,16 +1,16 @@
-TARGET=or1k-linux-uclibc
+TARGET=or1k-linux
 
-all: gcc-uclibc
+all: or1k-gcc-uclibc
 
-clean:
+or1k-clean:
 	rm -fr /srv/compilers/openrisc-devel/*
-	rm -f binutils boot-gcc linux-headers uclibc gcc-uclibc
+	rm -f or1k-*
 
-clean-ref:
+ref-clean:
 	rm -fr /srv/compilers/openrisc-devel-ref/*
-	rm -f binutils-ref boot-gcc-ref
+	rm -f ref-*
 
-binutils-ref:
+ref-binutils:
 	rm -fr build-x86_64-src
 	mkdir build-x86_64-src
 	(cd build-x86_64-src && \
@@ -20,9 +20,9 @@ binutils-ref:
 		--with-sysroot --disable-newlib --disable-libgloss && \
 	make -j && \
 	make install)
-	touch binutils-ref
+	touch $(@)
 
-binutils:
+or1k-binutils:
 	rm -fr build-or1k-src
 	mkdir build-or1k-src
 	(cd build-or1k-src && \
@@ -32,10 +32,10 @@ binutils:
 		--with-sysroot --disable-newlib --disable-libgloss && \
 	make -j && \
 	make install)
-	touch binutils
+	touch $(@)
 
 
-boot-gcc-ref: binutils-ref
+ref-boot-gcc: ref-binutils
 	rm -fr build-x86_64-gcc
 	mkdir build-x86_64-gcc
 	(cd build-x86_64-gcc && \
@@ -46,9 +46,9 @@ boot-gcc-ref: binutils-ref
 		--disable-shared --disable-libquadmath --disable-libatomic --disable-decimal-float && \
 	make -j7 && \
 	make install)
-	touch boot-gcc-ref
+	touch $(@)
 
-boot-gcc: binutils
+or1k-boot-gcc: or1k-binutils
 	rm -fr build-or1k-gcc
 	mkdir build-or1k-gcc
 	(cd build-or1k-gcc && \
@@ -59,22 +59,22 @@ boot-gcc: binutils
 		--disable-shared --disable-libquadmath --disable-libatomic && \
 	make -j7 && \
 	make install)
-	touch boot-gcc
+	touch $(@)
 
-linux-headers:
+or1k-linux-headers:
 	cd ../linux-3.6.10 && \
 	make ARCH="openrisc" INSTALL_HDR_PATH=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr headers_install
-	touch linux-headers
+	touch $(@)
 
-uclibc: linux-headers boot-gcc
+or1k-uclibc: or1k-linux-headers or1k-boot-gcc
 	(cd uClibc-or1k && \
 	make CROSS_COMPILER_PREFIX=${TARGET}- clean && \
 	make ARCH=or1k defconfig && \
 	make PREFIX=/srv/compilers/openrisc-devel CROSS_COMPILER_PREFIX=${TARGET}- SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root TARGET=${TARGET} -j7 && \
 	make PREFIX=/srv/compilers/openrisc-devel/${TARGET}/sys-root CROSS_COMPILER_PREFIX=${TARGET}- SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root TARGET=${TARGET} install)
-	touch uclibc
+	touch $(@)
 
-eglibc:
+or1k-eglibc:
 	rm -fr build-eglibc
 	mkdir build-eglibc
 	(cd build-eglibc && \
@@ -83,9 +83,9 @@ eglibc:
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
 		--disable-profile --without-gd --without-cvs --enable-add-ons && \
 	make)
-	touch eglibc
+	touch $(@)
 
-gcc-uclibc: uclibc
+or1k-gcc-uclibc: or1k-uclibc
 	rm -fr build-or1k-gcc
 	mkdir build-or1k-gcc
 	(cd build-or1k-gcc && \
@@ -95,4 +95,4 @@ gcc-uclibc: uclibc
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
-	touch gcc-uclibc
+	touch $(@)
