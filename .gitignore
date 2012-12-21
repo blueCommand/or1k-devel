@@ -1,0 +1,12 @@
+# Object files
+*.o
+.*.swp
+build*
+
+ref-*
+or1k-*
+
+eglibc
+or1k-gcc
+or1k-src
+uClibc-or1k
