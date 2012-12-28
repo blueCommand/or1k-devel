@@ -80,48 +80,41 @@ or1k-uclibc: or1k-linux-headers or1k-boot-gcc
 	make PREFIX=/srv/compilers/openrisc-devel/${TARGET}/sys-root CROSS_COMPILER_PREFIX=${TARGET}- SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root TARGET=${TARGET} install)
 	touch $(@)
 
-or1k-eglibc:or1k-linux-headers or1k-boot-gcc
+or1k-boot-eglibc: or1k-linux-headers or1k-boot-gcc
 	rm -fr build-eglibc
 	mkdir build-eglibc
 	(cd build-eglibc && \
 	CC=or1k-linux-gcc ../eglibc/libc/configure --host=or1k-linux \
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
-		--disable-profile --without-gd --without-cvs --enable-add-ons && \
-	make -j7)
+		--disable-profile --without-gd --without-cvs --enable-add-ons \
+		--disable-build-nscd --disable-nscd --disable-shared && \
+	make -j7 lib && \
+	make cross-compiling=yes install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install-lib)
 	touch $(@)
 
-ref-eglibc:ref-linux-headers ref-boot-gcc
-	rm -fr build-ref-eglibc
-	mkdir build-ref-eglibc
-	(cd build-ref-eglibc && \
-	CC=x86_64-linux-gcc ../eglibc/libc/configure --host=x86_64-linux \
+or1k-gcc: or1k-boot-eglibc
+	rm -fr build-or1k-gcc
+	mkdir build-or1k-gcc
+	(cd build-or1k-gcc && \
+	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
+		--enable-languages=c,c++ --enable-threads=posix \
+		--disable-libgomp --disable-libmudflap \
+		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
+	make -j7 && \
+	make install)
+	touch $(@)
+
+or1k-eglibc: or1k-gcc
+	rm -fr build-eglibc
+	mkdir build-eglibc
+	(cd build-eglibc && \
+	CC=or1k-linux-gcc ../eglibc/libc/configure --host=or1k-linux \
 		--prefix=/usr \
-		--with-headers=/srv/compilers/openrisc-devel-ref/x86_64-linux/sys-root/usr/include \
-		--disable-profile --without-gd --without-cvs --enable-add-ons && \
-	make -j7)
+		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
+		--disable-profile --without-gd --without-cvs --enable-add-ons \
+		--disable-build-nscd --disable-nscd && \
+	make -j7 && \
+	make cross-compiling=yes install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install-headers install-lib)
 	touch $(@)
 
-or1k-gcc-uclibc: or1k-uclibc
-	rm -fr build-or1k-gcc
-	mkdir build-or1k-gcc
-	(cd build-or1k-gcc && \
-	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
-		--enable-languages=c,c++ --enable-threads=posix \
-		--disable-libgomp --disable-libmudflap \
-		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
-	make -j7 && \
-	make install)
-	touch $(@)
-
-or1k-gcc: or1k-eglibc
-	rm -fr build-or1k-gcc
-	mkdir build-or1k-gcc
-	(cd build-or1k-gcc && \
-	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
-		--enable-languages=c,c++ --enable-threads=posix \
-		--disable-libgomp --disable-libmudflap \
-		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
-	make -j7 && \
-	make install)
-	touch $(@)
