@@ -1,4 +1,8 @@
 TARGET=or1k-linux
+ARCH=openrisc
+
+#TARGET=x86_64-linux
+#ARCH=x86_64
 
 all: stage-gcc gdb
 
@@ -46,7 +50,7 @@ boot-gcc-stamp: binutils-stamp
 	mkdir build-or1k-gcc
 	(cd build-or1k-gcc && \
 	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
-		--disable-libssp \
+		--disable-libssp --disable-decimal-float \
 		--srcdir=../or1k-gcc --enable-languages=c --without-headers \
 		--enable-threads=single --disable-libgomp --disable-libmudflap \
 		--disable-shared --disable-libquadmath --disable-libatomic && \
@@ -56,7 +60,7 @@ boot-gcc-stamp: binutils-stamp
 
 linux-headers-stamp:
 	cd ../linux-3.6.10 && \
-	make ARCH="openrisc" INSTALL_HDR_PATH=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr headers_install
+	make ARCH="${ARCH}" INSTALL_HDR_PATH=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr headers_install
 	touch $(@)
 
 uclibc-stamp: linux-headers-stamp boot-gcc-stamp
@@ -83,14 +87,14 @@ boot-eglibc-stamp: linux-headers-stamp boot-gcc-stamp
 	rm -fr build-eglibc
 	mkdir build-eglibc
 	(cd build-eglibc && \
-	CC=or1k-linux-gcc ../eglibc/libc/configure --host=or1k-linux \
+	CC=${TARGET}-gcc CFLAGS="-fPIC -g -O" ../eglibc/libc/configure --host=${TARGET} \
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
 		--disable-profile --without-gd --without-cvs --enable-add-ons \
-		--disable-build-nscd --disable-nscd --disable-shared && \
+		--disable-build-nscd --disable-nscd --disable-shared libc_cv_pic_default=yes && \
 	make -j7 lib && \
-	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -k -j7 || true)
-	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/or1k-linux/sys-root/usr/include/gnu/
+	(make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -k -j7 || true))
+	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
 	touch $(@)
 
 stage-gcc-stamp: boot-eglibc-stamp
@@ -107,17 +111,18 @@ stage-gcc-stamp: boot-eglibc-stamp
 	touch $(@)
 
 # These do not work yet
-eglibc-stamp: stage-gcc-stamp
+eglibc-stamp: linux-headers-stamp boot-gcc-stamp
 	rm -fr build-eglibc
 	mkdir build-eglibc
 	(cd build-eglibc && \
-	CC=or1k-linux-gcc ../eglibc/libc/configure --host=or1k-linux \
+	CC=${TARGET}-gcc CFLAGS="-fPIC -g -O" ../eglibc/libc/configure --host=${TARGET} \
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
 		--disable-profile --without-gd --without-cvs --enable-add-ons \
-		--disable-build-nscd --disable-nscd && \
+		--disable-build-nscd --disable-nscd libc_cv_pic_default=yes && \
 	make -j7 && \
-	make cross-compiling=yes install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install-headers install-lib)
+	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7)
+	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
 	touch $(@)
 
 gcc-stamp: eglibc-stamp
