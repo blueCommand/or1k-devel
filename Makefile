@@ -16,8 +16,9 @@ stage-gcc: stage-gcc-stamp
 uclibc: uclibc-stamp
 eglibc: eglibc-stamp
 gcc: gcc-stamp
+gcc-uclibc: gcc-uclibc-stamp
 
-.PHONY: all clean binutils gdb boot-gcc linux-headers boot-eglibc stage-gcc uclibc eglibc gcc
+.PHONY: all clean binutils gdb boot-gcc linux-headers boot-eglibc stage-gcc uclibc eglibc gcc gcc-uclibc
 
 binutils-stamp:
 	rm -fr build-or1k-src
@@ -64,6 +65,18 @@ uclibc-stamp: linux-headers boot-gcc
 	make ARCH=or1k defconfig && \
 	make PREFIX=/srv/compilers/openrisc-devel CROSS_COMPILER_PREFIX=${TARGET}- SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root TARGET=${TARGET} -j7 && \
 	make PREFIX=/srv/compilers/openrisc-devel/${TARGET}/sys-root CROSS_COMPILER_PREFIX=${TARGET}- SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root TARGET=${TARGET} install)
+	touch $(@)
+
+gcc-uclibc-stamp: uclibc
+	rm -fr build-or1k-gcc
+	mkdir build-or1k-gcc
+	(cd build-or1k-gcc && \
+	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
+		--enable-languages=c,c++ --enable-threads=posix \
+		--disable-libgomp --disable-libmudflap \
+		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
+	make -j7 && \
+	make install)
 	touch $(@)
 
 boot-eglibc-stamp: linux-headers boot-gcc
