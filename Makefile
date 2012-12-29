@@ -4,10 +4,22 @@ all: stage-gcc gdb
 
 clean:
 	rm -fr /srv/compilers/openrisc-devel/*
-	rm -f or1k-* || true
+	rm -f *-stamp || true
 	rm -fr build-*
 
-binutils:
+binutils: binutils-stamp
+gdb: gdb-stamp
+boot-gcc: boot-gcc-stamp
+linux-headers: linux-headers-stamp
+boot-eglibc: boot-eglibc-stamp
+stage-gcc: stage-gcc-stamp
+uclibc: uclibc-stamp
+eglibc: eglibc-stamp
+gcc: gcc-stamp
+
+.PHONY: all clean binutils gdb boot-gcc linux-headers boot-eglibc stage-gcc uclibc eglibc gcc
+
+binutils-stamp:
 	rm -fr build-or1k-src
 	mkdir build-or1k-src
 	(cd build-or1k-src && \
@@ -19,7 +31,7 @@ binutils:
 	make install)
 	touch $(@)
 
-gdb:
+gdb-stamp:
 	rm -fr build-or1k-gdb
 	mkdir build-or1k-gdb
 	(cd build-or1k-gdb && \
@@ -28,7 +40,7 @@ gdb:
 	make install)
 	touch $(@)
 
-boot-gcc: binutils
+boot-gcc-stamp: binutils
 	rm -fr build-or1k-gcc
 	mkdir build-or1k-gcc
 	(cd build-or1k-gcc && \
@@ -41,12 +53,12 @@ boot-gcc: binutils
 	make install)
 	touch $(@)
 
-linux-headers:
+linux-headers-stamp:
 	cd ../linux-3.6.10 && \
 	make ARCH="openrisc" INSTALL_HDR_PATH=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr headers_install
 	touch $(@)
 
-uclibc: linux-headers boot-gcc
+uclibc-stamp: linux-headers boot-gcc
 	(cd uClibc-or1k && \
 	make CROSS_COMPILER_PREFIX=${TARGET}- clean && \
 	make ARCH=or1k defconfig && \
@@ -54,7 +66,7 @@ uclibc: linux-headers boot-gcc
 	make PREFIX=/srv/compilers/openrisc-devel/${TARGET}/sys-root CROSS_COMPILER_PREFIX=${TARGET}- SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root TARGET=${TARGET} install)
 	touch $(@)
 
-boot-eglibc: linux-headers boot-gcc
+boot-eglibc-stamp: linux-headers boot-gcc
 	rm -fr build-eglibc
 	mkdir build-eglibc
 	(cd build-eglibc && \
@@ -68,7 +80,7 @@ boot-eglibc: linux-headers boot-gcc
 	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/or1k-linux/sys-root/usr/include/gnu/
 	touch $(@)
 
-stage-gcc: boot-eglibc
+stage-gcc-stamp: boot-eglibc
 	rm -fr build-or1k-gcc
 	mkdir build-or1k-gcc
 	(cd build-or1k-gcc && \
@@ -82,7 +94,7 @@ stage-gcc: boot-eglibc
 	touch $(@)
 
 # These do not work yet
-eglibc: stage-gcc
+eglibc-stamp: stage-gcc
 	rm -fr build-eglibc
 	mkdir build-eglibc
 	(cd build-eglibc && \
@@ -95,7 +107,7 @@ eglibc: stage-gcc
 	make cross-compiling=yes install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install-headers install-lib)
 	touch $(@)
 
-gcc: eglibc
+gcc-stamp: eglibc
 	rm -fr build-or1k-gcc
 	mkdir build-or1k-gcc
 	(cd build-or1k-gcc && \
