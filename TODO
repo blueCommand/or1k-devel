@@ -2,6 +2,10 @@
 
 - Port eglibc!
 
+- Why won't glibc use -lgcc_eh?
+- Make everything compile, not just libc
+- Make libc work! :)
+
 
 #### DELAYED
 
