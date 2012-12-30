@@ -1,13 +1,21 @@
 #### PROGRESS
 
-- Port eglibc!
+- Implement TLS, wooho!
+ - Implement ELF relocations
+ - Implement set_thread_area syscall
 
+- For now we use --enable-tls, implement check in configure.ac
+
+- Implement compare and swap atomic in kernel (use syscall or1k_atomic as base).
+
+#### DELAYED
+
+- Port eglibc!
 - Why won't glibc use -lgcc_eh?
 - Make everything compile, not just libc
 - Make libc work! :)
 
 
-#### DELAYED
 
 - Why does CFI imply that .eh_frame is always included?
 > If I solve this, I can probably remove the ugly -fno-dwarf-asm-thing in gcc

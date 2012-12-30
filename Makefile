@@ -50,7 +50,7 @@ boot-gcc-stamp: binutils-stamp
 	mkdir build-or1k-gcc
 	(cd build-or1k-gcc && \
 	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
-		--disable-libssp --disable-decimal-float \
+		--disable-libssp --disable-decimal-float --enable-tls \
 		--srcdir=../or1k-gcc --enable-languages=c --without-headers \
 		--enable-threads=single --disable-libgomp --disable-libmudflap \
 		--disable-shared --disable-libquadmath --disable-libatomic && \
@@ -93,8 +93,9 @@ boot-eglibc-stamp: linux-headers-stamp boot-gcc-stamp
 		--disable-profile --without-gd --without-cvs --enable-add-ons \
 		--disable-build-nscd --disable-nscd --disable-shared libc_cv_pic_default=yes && \
 	make -j7 lib && \
-	(make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -k -j7 || true))
-	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
+	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install-headers install-lib -j7)
+	cp -v build-eglibc/libc.a /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/lib/
+	cp -v eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
 	touch $(@)
 
 stage-gcc-stamp: boot-eglibc-stamp
@@ -104,7 +105,7 @@ stage-gcc-stamp: boot-eglibc-stamp
 	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--enable-languages=c,c++ \
 		--disable-libgomp --disable-libmudflap --disable-libatomic \
-		--enable-threads=single \
+		--enable-threads=posix --enable-tls \
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
@@ -131,7 +132,7 @@ gcc-stamp: eglibc-stamp
 	(cd build-or1k-gcc && \
 	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--enable-languages=c,c++ --enable-threads=posix \
-		--disable-libgomp --disable-libmudflap \
+		--disable-libgomp --disable-libmudflap --enable-tls \
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
