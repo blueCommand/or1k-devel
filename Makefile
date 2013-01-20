@@ -31,7 +31,7 @@ binutils-stamp:
 	../or1k-src/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
 		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
-		--with-sysroot --disable-newlib --disable-libgloss && \
+		--with-sysroot --disable-newlib --disable-libgloss --enable-cgen-maint && \
 	make -j && \
 	make install)
 	touch $(@)
@@ -53,7 +53,7 @@ boot-gcc-stamp: binutils-stamp
 		--disable-libssp --disable-decimal-float --enable-tls \
 		--srcdir=../or1k-gcc --enable-languages=c --without-headers \
 		--enable-threads=single --disable-libgomp --disable-libmudflap \
-		--disable-shared --disable-libquadmath --disable-libatomic && \
+		--disable-shared --disable-libquadmath --disable-libatomic --disable-sjlj-exceptions && \
 	make -j7 && \
 	make install)
 	touch $(@)
@@ -77,50 +77,21 @@ gcc-uclibc-stamp: uclibc-stamp
 	(cd build-or1k-gcc && \
 	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--enable-languages=c,c++ --enable-threads=posix \
-		--disable-libgomp --disable-libmudflap \
+		--disable-libgomp --disable-libmudflap --enable-tls \
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
 	touch $(@)
 
-boot-eglibc-stamp: linux-headers-stamp boot-gcc-stamp
-	rm -fr build-eglibc
-	mkdir build-eglibc
-	(cd build-eglibc && \
-	CC=${TARGET}-gcc CFLAGS="-fPIC -g -O" ../eglibc/libc/configure --host=${TARGET} \
-		--prefix=/usr \
-		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
-		--disable-profile --without-gd --without-cvs --enable-add-ons \
-		--disable-build-nscd --disable-nscd --disable-shared libc_cv_pic_default=yes && \
-	make -j7 lib && \
-	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install-headers install-lib -j7)
-	cp -v build-eglibc/libc.a /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/lib/
-	cp -v eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
-	touch $(@)
-
-stage-gcc-stamp: boot-eglibc-stamp
-	rm -fr build-or1k-gcc
-	mkdir build-or1k-gcc
-	(cd build-or1k-gcc && \
-	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
-		--enable-languages=c,c++ \
-		--disable-libgomp --disable-libmudflap --disable-libatomic \
-		--enable-threads=posix --enable-tls \
-		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
-	make -j7 && \
-	make install)
-	touch $(@)
-
-# These do not work yet
 eglibc-stamp: linux-headers-stamp boot-gcc-stamp
 	rm -fr build-eglibc
 	mkdir build-eglibc
 	(cd build-eglibc && \
-	CC=${TARGET}-gcc CFLAGS="-fPIC -g -O" ../eglibc/libc/configure --host=${TARGET} \
+	CC=${TARGET}-gcc ../eglibc/libc/configure --host=${TARGET} \
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
 		--disable-profile --without-gd --without-cvs --enable-add-ons \
-		--disable-build-nscd --disable-nscd libc_cv_pic_default=yes && \
+		--disable-build-nscd --disable-nscd && \
 	make -j7 && \
 	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7)
 	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
@@ -132,7 +103,7 @@ gcc-stamp: eglibc-stamp
 	(cd build-or1k-gcc && \
 	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--enable-languages=c,c++ --enable-threads=posix \
-		--disable-libgomp --disable-libmudflap --enable-tls \
+		--disable-libgomp --disable-libmudflap --enable-tls --disable-sjlj-exceptions \
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
