@@ -90,8 +90,7 @@ eglibc-stamp: linux-headers-stamp boot-gcc-stamp
 	CC=${TARGET}-gcc ../eglibc/libc/configure --host=${TARGET} \
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
-		--disable-profile --without-gd --without-cvs --enable-add-ons \
-		--disable-build-nscd --disable-nscd && \
+		--disable-profile --without-gd --without-cvs --enable-add-ons && \
 	make -j7 && \
 	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7)
 	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
