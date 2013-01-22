@@ -1,34 +1,28 @@
 #### PROGRESS
 
+- Why does eglibc crash on a simple relocation to __libc_multiple_libcs ?
+
 - Implement TLS, wooho!
- - Implement ELF relocations
- - Implement set_thread_area syscall
-
-- For now we use --enable-tls, implement check in configure.ac
-
-- Implement compare and swap atomic in kernel (use syscall or1k_atomic as base).
+  - TLS relocations:      done
+  - Resolve relocations:
+  - LD? will probably just keep it as GD for now.
 
 #### DELAYED
 
 - Port eglibc!
-- Why won't glibc use -lgcc_eh?
-- Make everything compile, not just libc
 - Make libc work! :)
 
+- Implement support for DWARF2 exceptions in signal handler (java?)
+  Not needed for now.
 
+- For now we use --enable-tls, implement check in configure.ac
 
-- Why does CFI imply that .eh_frame is always included?
-> If I solve this, I can probably remove the ugly -fno-dwarf-asm-thing in gcc
-> Normal gcc includes .eh_frame as well - perhaps it should be included?
-> 
-> A good thing would probably be to compile gcc for x86_54 and compare the outputed crtendS.c with that of openrisc
-
-x64 uses -fno-asynchronous-unwind-tables (as we already knew) which fixes crtstuff. So we're on the right track.
-Including gnu-user.h added GNU_EH_FRAMES as well which is nice.
-
+- Implement compare and swap atomic in kernel (use syscall or1k_atomic as base).
+  Not important right now
 
 #### DONE
 
+- DWARF2 exceptions
 - GNU_STACK - do we want it? How?
 - Is relro working?
 - Is CFI working?

@@ -112,6 +112,22 @@ eglibc-stamp: linux-headers-stamp boot-gcc-stamp
 	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
 	touch $(@)
 
+eglibc-pic-stamp: linux-headers-stamp boot-gcc-stamp
+	rm -fr /tmp/build-eglibc
+	mkdir /tmp/build-eglibc
+	(cd /tmp/build-eglibc && \
+	CC=${TARGET}-gcc CFLAGS="-fPIC -g -O" ${DIR}/eglibc/libc/configure --host=${TARGET} \
+		--prefix=/usr \
+		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
+		--disable-profile --without-gd --without-cvs --enable-add-ons \
+		libc_cv_pic_default=yes  && \
+	make -j7 && \
+	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7)
+	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
+	touch $(@)
+
+
+
 gcc-stamp: eglibc-stamp
 	rm -fr /tmp/build-or1k-gcc
 	mkdir /tmp/build-or1k-gcc
