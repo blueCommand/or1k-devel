@@ -1,7 +1,9 @@
 TARGET=or1k-linux
 ARCH=openrisc
+DIR=${PWD}
 
 #TARGET=x86_64-linux
+NATIVE_TARGET=x86_64-linux
 #ARCH=x86_64
 
 all: stage-gcc gdb
@@ -9,7 +11,7 @@ all: stage-gcc gdb
 clean:
 	rm -fr /srv/compilers/openrisc-devel/*
 	rm -f *-stamp || true
-	rm -fr build-*
+	rm -fr /tmp/build-*
 
 binutils: binutils-stamp
 gdb: gdb-stamp
@@ -21,14 +23,15 @@ uclibc: uclibc-stamp
 eglibc: eglibc-stamp
 gcc: gcc-stamp
 gcc-uclibc: gcc-uclibc-stamp
+gcc-native: gcc-native-stamp
 
 .PHONY: all clean binutils gdb boot-gcc linux-headers boot-eglibc stage-gcc uclibc eglibc gcc gcc-uclibc
 
 binutils-stamp:
-	rm -fr build-or1k-src
-	mkdir build-or1k-src
-	(cd build-or1k-src && \
-	../or1k-src/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
+	rm -fr /tmp/build-or1k-src
+	mkdir /tmp/build-or1k-src
+	(cd /tmp/build-or1k-src && \
+	${DIR}/or1k-src/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
 		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
 		--with-sysroot --disable-newlib --disable-libgloss --enable-cgen-maint && \
@@ -36,24 +39,36 @@ binutils-stamp:
 	make install)
 	touch $(@)
 
-gdb-stamp:
-	rm -fr build-or1k-gdb
-	mkdir build-or1k-gdb
-	(cd build-or1k-gdb && \
-	LDFLAGS='-lsim' ../gdb-7.2/configure --target=or32-linux --prefix=/srv/compilers/openrisc-devel && \
-	make -j7 && \
-	make install)
-	touch $(@)
+#gdb-stamp:
+#	rm -fr build-or1k-gdb
+#	mkdir build-or1k-gdb
+#	(cd build-or1k-gdb && \
+#	../gdb-src/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
+#		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
+#		--disable-libgui --disable-rda --disable-sid --disable-sim --enable-gdb --disable-werror \
+#		--with-sysroot --disable-newlib --disable-libgloss --enable-cgen-maint && \
+#	make -j && \
+#	make install)
+#	touch $(@)
+
+#gdb-stamp:
+#	rm -fr build-or1k-gdb
+#	mkdir build-or1k-gdb
+#	(cd build-or1k-gdb && \
+#	LDFLAGS='-lsim' ../gdb-7.2/configure --target=or32-linux --prefix=/srv/compilers/openrisc-devel && \
+#	make -j7 && \
+#	make install)
+#	touch $(@)
 
 boot-gcc-stamp: binutils-stamp
-	rm -fr build-or1k-gcc
-	mkdir build-or1k-gcc
-	(cd build-or1k-gcc && \
-	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
+	rm -fr /tmp/build-or1k-gcc
+	mkdir /tmp/build-or1k-gcc
+	(cd /tmp/build-or1k-gcc && \
+	${DIR}/or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--disable-libssp --disable-decimal-float --enable-tls \
-		--srcdir=../or1k-gcc --enable-languages=c --without-headers \
+		--enable-languages=c --without-headers --disable-sjlj-exceptions \
 		--enable-threads=single --disable-libgomp --disable-libmudflap \
-		--disable-shared --disable-libquadmath --disable-libatomic --disable-sjlj-exceptions && \
+		--disable-shared --disable-libquadmath --disable-libatomic && \
 	make -j7 && \
 	make install)
 	touch $(@)
@@ -72,22 +87,23 @@ uclibc-stamp: linux-headers-stamp boot-gcc-stamp
 	touch $(@)
 
 gcc-uclibc-stamp: uclibc-stamp
-	rm -fr build-or1k-gcc
-	mkdir build-or1k-gcc
-	(cd build-or1k-gcc && \
-	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
+	rm -fr /tmp/build-or1k-gcc
+	mkdir /tmp/build-or1k-gcc
+	(cd /tmp/build-or1k-gcc && \
+	${DIR}/or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--enable-languages=c,c++ --enable-threads=posix \
 		--disable-libgomp --disable-libmudflap --enable-tls \
+		--disable-lto --disable-sjlj-exceptions \
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
 	touch $(@)
 
 eglibc-stamp: linux-headers-stamp boot-gcc-stamp
-	rm -fr build-eglibc
-	mkdir build-eglibc
-	(cd build-eglibc && \
-	CC=${TARGET}-gcc ../eglibc/libc/configure --host=${TARGET} \
+	rm -fr /tmp/build-eglibc
+	mkdir /tmp/build-eglibc
+	(cd /tmp/build-eglibc && \
+	CC=${TARGET}-gcc ${DIR}/eglibc/libc/configure --host=${TARGET} \
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
 		--disable-profile --without-gd --without-cvs --enable-add-ons && \
@@ -97,13 +113,25 @@ eglibc-stamp: linux-headers-stamp boot-gcc-stamp
 	touch $(@)
 
 gcc-stamp: eglibc-stamp
-	rm -fr build-or1k-gcc
-	mkdir build-or1k-gcc
-	(cd build-or1k-gcc && \
-	../or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
+	rm -fr /tmp/build-or1k-gcc
+	mkdir /tmp/build-or1k-gcc
+	(cd /tmp/build-or1k-gcc && \
+	${DIR}/or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--enable-languages=c,c++ --enable-threads=posix \
 		--disable-libgomp --disable-libmudflap --enable-tls --disable-sjlj-exceptions \
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
+	make -j7 && \
+	make install)
+	touch $(@)
+
+gcc-native-stamp:
+	rm -fr /tmp/build-native-gcc
+	mkdir /tmp/build-native-gcc
+	(cd /tmp/build-native-gcc && \
+	${DIR}/or1k-gcc/configure --prefix=/srv/compilers/native-devel \
+		--enable-languages=c,c++ --enable-threads=posix \
+		--disable-libgomp --disable-libmudflap --enable-tls --disable-sjlj-exceptions \
+		--disable-multilib && \
 	make -j7 && \
 	make install)
 	touch $(@)
