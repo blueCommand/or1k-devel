@@ -3,9 +3,7 @@ TARGET_REG=or1k-linux-uclibc
 ARCH=openrisc
 DIR=${PWD}
 
-#TARGET=x86_64-linux
 NATIVE_TARGET=x86_64-linux
-#ARCH=x86_64
 
 all: stage-gcc gdb
 
@@ -62,8 +60,15 @@ uclibc-stamp: linux-headers-stamp boot-gcc-stamp
 	(cd uClibc-or1k && \
 	make CROSS_COMPILER_PREFIX=${TARGET}- clean && \
 	make ARCH=or1k defconfig && \
-	make PREFIX=/srv/compilers/openrisc-devel CROSS_COMPILER_PREFIX=${TARGET}- SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root TARGET=${TARGET} -j7 && \
-	make PREFIX=/srv/compilers/openrisc-devel/${TARGET}/sys-root CROSS_COMPILER_PREFIX=${TARGET}- SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root TARGET=${TARGET} install)
+	make \
+		CROSS_COMPILER_PREFIX=${TARGET}- \
+		SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root \
+		-j7 && \
+	make \
+		PREFIX=/srv/compilers/openrisc-devel/${TARGET}/sys-root \
+		CROSS_COMPILER_PREFIX=${TARGET}- \
+		SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root \
+		install)
 	touch $(@)
 
 gcc-uclibc-stamp: uclibc-stamp
@@ -72,8 +77,7 @@ gcc-uclibc-stamp: uclibc-stamp
 	(cd /tmp/build-or1k-gcc && \
 	${DIR}/or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--enable-languages=c,c++ --enable-threads=posix \
-		--disable-libgomp --disable-libmudflap --enable-tls \
-		--disable-lto --disable-sjlj-exceptions \
+		--disable-libgomp --disable-libmudflap --enable-tls --disable-sjlj-exceptions \
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
@@ -174,8 +178,16 @@ uclibc-regression: linux-headers-regression boot-gcc-regression
 	cd uClibc-or1k && \
 	make CROSS_COMPILER_PREFIX=${TARGET_REG}- clean && \
 	make ARCH=or1k defconfig && \
-	make PREFIX=/srv/compilers/openrisc-reg CROSS_COMPILER_PREFIX=${TARGET_REG}- SYSROOT=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root TARGET_REG=${TARGET_REG} -j7 && \
-	make PREFIX=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root CROSS_COMPILER_PREFIX=${TARGET_REG}- SYSROOT=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root TARGET_REG=${TARGET_REG} install)
+	make \
+		CROSS_COMPILER_PREFIX=${TARGET_REG}- \
+		SYSROOT=/srv/compilers/openrisc-devel/${TARGET_REG}/sys-root \
+		-j7 && \
+	make \
+		PREFIX=/srv/compilers/openrisc-devel/${TARGET_REG}/sys-root \
+		CROSS_COMPILER_PREFIX=${TARGET_REG}- \
+		SYSROOT=/srv/compilers/openrisc-devel/${TARGET_REG}/sys-root \
+		install)
+	touch $(@)
 
 gcc-uclibc-regression: uclibc-regression
 	rm -fr /tmp/build-reg-gcc
@@ -183,8 +195,7 @@ gcc-uclibc-regression: uclibc-regression
 	(cd /tmp/build-reg-gcc && \
 	${DIR}/or1k-gcc/configure --target=${TARGET_REG} --prefix=/srv/compilers/openrisc-reg \
 		--enable-languages=c,c++ --enable-threads=posix \
-		--disable-libgomp --disable-libmudflap --enable-tls \
-		--disable-lto --disable-sjlj-exceptions \
+		--disable-libgomp --disable-libmudflap --enable-tls --disable-sjlj-exceptions \
 		--with-sysroot=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
