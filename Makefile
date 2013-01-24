@@ -11,6 +11,7 @@ clean:
 	rm -fr /srv/compilers/openrisc-devel/*
 	rm -f *-stamp || true
 	rm -fr /tmp/build-*
+	rm -fr ${DIR}/../initramfs/lib ${DIR}/../initramfs/usr/lib
 
 binutils: binutils-stamp
 gdb: gdb-stamp
@@ -73,7 +74,7 @@ uclibc-stamp: linux-headers-stamp boot-gcc-stamp
 	mkdir -p ${DIR}/../initramfs/usr/
 	cp -aR  /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/lib ${DIR}/../initramfs/usr/
 	ln -sf ld-uClibc.so.0 ${DIR}/../initramfs/lib/ld.so.1
-	${TARGET}-strip ${DIR}/../initramfs/lib/*
+	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
 	touch $(@)
 
 gcc-uclibc-stamp: uclibc-stamp
@@ -86,8 +87,8 @@ gcc-uclibc-stamp: uclibc-stamp
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
-	cp -aR /srv/compilers/openrisc-devel/${TARGET}/lib/*.so ${DIR}/../initramfs/lib/
-	${TARGET}-strip ${DIR}/../initramfs/lib/*.so
+	cp -aR /srv/compilers/openrisc-devel/${TARGET}/lib/*.so* ${DIR}/../initramfs/lib/
+	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
 	touch $(@)
 
 eglibc-stamp: linux-headers-stamp boot-gcc-stamp
