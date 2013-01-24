@@ -69,6 +69,11 @@ uclibc-stamp: linux-headers-stamp boot-gcc-stamp
 		CROSS_COMPILER_PREFIX=${TARGET}- \
 		SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root \
 		install)
+	cp -aR  /srv/compilers/openrisc-devel/${TARGET}/sys-root/lib ${DIR}/../initramfs/
+	mkdir -p ${DIR}/../initramfs/usr/
+	cp -aR  /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/lib ${DIR}/../initramfs/usr/
+	ln -sf ld-uClibc.so.0 ${DIR}/../initramfs/lib/ld.so.1
+	${TARGET}-strip ${DIR}/../initramfs/lib/*
 	touch $(@)
 
 gcc-uclibc-stamp: uclibc-stamp
@@ -81,6 +86,8 @@ gcc-uclibc-stamp: uclibc-stamp
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
+	cp -aR /srv/compilers/openrisc-devel/${TARGET}/lib/*.so ${DIR}/../initramfs/lib/
+	${TARGET}-strip ${DIR}/../initramfs/lib/*.so
 	touch $(@)
 
 eglibc-stamp: linux-headers-stamp boot-gcc-stamp
