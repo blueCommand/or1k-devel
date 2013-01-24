@@ -69,11 +69,6 @@ uclibc-stamp: linux-headers-stamp boot-gcc-stamp
 		CROSS_COMPILER_PREFIX=${TARGET}- \
 		SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root \
 		install)
-	cp -aR  /srv/compilers/openrisc-devel/${TARGET}/sys-root/lib ${DIR}/../initramfs/
-	mkdir -p ${DIR}/../initramfs/usr/
-	cp -aR  /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/lib ${DIR}/../initramfs/usr/
-	ln -sf ld-uClibc.so.0 ${DIR}/../initramfs/lib/ld.so.1
-	${TARGET}-strip ${DIR}/../initramfs/lib/*
 	touch $(@)
 
 gcc-uclibc-stamp: uclibc-stamp
@@ -86,8 +81,6 @@ gcc-uclibc-stamp: uclibc-stamp
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
-	cp -aR /srv/compilers/openrisc-devel/${TARGET}/lib/*.so ${DIR}/../initramfs/lib/
-	${TARGET}-strip ${DIR}/../initramfs/lib/*.so
 	touch $(@)
 
 eglibc-stamp: linux-headers-stamp boot-gcc-stamp
@@ -187,12 +180,12 @@ uclibc-regression: linux-headers-regression boot-gcc-regression
 	make ARCH=or1k defconfig && \
 	make \
 		CROSS_COMPILER_PREFIX=${TARGET_REG}- \
-		SYSROOT=/srv/compilers/openrisc-devel/${TARGET_REG}/sys-root \
+		SYSROOT=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root \
 		-j7 && \
 	make \
-		PREFIX=/srv/compilers/openrisc-devel/${TARGET_REG}/sys-root \
+		PREFIX=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root \
 		CROSS_COMPILER_PREFIX=${TARGET_REG}- \
-		SYSROOT=/srv/compilers/openrisc-devel/${TARGET_REG}/sys-root \
+		SYSROOT=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root \
 		install)
 	touch $(@)
 
@@ -220,5 +213,5 @@ check: gcc-uclibc-regression dejagnu
 	ln -s /srv/compilers/openrisc-reg/bin/${TARGET_REG}-g++ /srv/compilers/openrisc-reg/bin/g++
 	(export PATH="/srv/compilers/openrisc-test/bin:${PATH}" && \
 	cd /tmp/build-reg-gcc && \
-	make check RUNTESTFLAGS="--target_board=or1k-linux-sim --target_triplet=or1k-unknown-linux-gnu" OR1K_IP="192.168.255.200")
+	make check-c check-c++ RUNTESTFLAGS="--target_board=or1k-linux-sim --target_triplet=or1k-unknown-linux-gnu" OR1K_IP="192.168.255.200")
 
