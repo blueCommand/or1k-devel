@@ -53,7 +53,7 @@ boot-gcc-stamp: binutils-stamp
 	touch $(@)
 
 linux-headers-stamp:
-	cd ../linux-3.6.10 && \
+	cd ../or1k-linux && \
 	make ARCH="${ARCH}" INSTALL_HDR_PATH=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr headers_install
 	touch $(@)
 
@@ -95,26 +95,13 @@ eglibc-stamp: linux-headers-stamp boot-gcc-stamp
 	rm -fr /tmp/build-eglibc
 	mkdir /tmp/build-eglibc
 	(cd /tmp/build-eglibc && \
-	CC=${TARGET}-gcc ${DIR}/eglibc/libc/configure --host=${TARGET} \
+	${DIR}/eglibc/libc/configure --host=${TARGET} \
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
-		--disable-profile --without-gd --without-cvs --enable-add-ons && \
+		--disable-profile --without-gd --without-cvs --enable-add-ons  && \
 	make -j7 && \
-	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7)
-	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
-	touch $(@)
-
-eglibc-pic-stamp: linux-headers-stamp boot-gcc-stamp
-	rm -fr /tmp/build-eglibc
-	mkdir /tmp/build-eglibc
-	(cd /tmp/build-eglibc && \
-	CC=${TARGET}-gcc CFLAGS="-fPIC -g -O" ${DIR}/eglibc/libc/configure --host=${TARGET} \
-		--prefix=/usr \
-		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
-		--disable-profile --without-gd --without-cvs --enable-add-ons \
-		libc_cv_pic_default=yes  && \
-	make -j7 && \
-	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7)
+	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7 && \
+	make install_root=${DIR}/../initramfs install -j7)
 	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
 	touch $(@)
 
@@ -133,7 +120,8 @@ gcc-stamp: eglibc-stamp
 gcc-native-stamp:
 	rm -fr /tmp/build-native-gcc
 	mkdir /tmp/build-native-gcc
-	(cd /tmp/build-native-gcc && \
+	(export PATH="/srv/compilers/native-devel/bin:${PATH}" && \
+	cd /tmp/build-native-gcc && \
 	${DIR}/or1k-gcc/configure --prefix=/srv/compilers/native-devel \
 		--enable-languages=c,c++ --enable-threads=posix \
 		--disable-libgomp --disable-libmudflap --enable-tls --disable-sjlj-exceptions \
