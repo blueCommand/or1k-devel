@@ -1,23 +1,9 @@
 #### PROGRESS
 
+
 - Port eglibc!
-- Make libc work! :)
-
 - Fix vfork
-
-./ports/sysdeps/unix/sysv/linux/or1k/sysdep.h:  /* TODO: error handling */
-./ports/sysdeps/unix/sysv/linux/or1k/sysdep.h:/* TODO */
-./ports/sysdeps/unix/sysv/linux/or1k/nptl/vfork.S:  /* TODO */
-./ports/sysdeps/unix/sysv/linux/or1k/nptl/vfork.S:  /* TODO */
-./ports/sysdeps/unix/sysv/linux/or1k/nptl/vfork.S:  /* TODO */
-./ports/sysdeps/unix/sysv/linux/or1k/nptl/pt-vfork.S:/* TODO! What is special about pthreads vfork? */
-./ports/sysdeps/unix/sysv/linux/or1k/clone.S:  /* TODO! */
-./ports/sysdeps/unix/sysv/linux/or1k/bits/pthreadtypes.h:/* TODO: fix these! */
-./ports/sysdeps/or1k/dl-machine.h:/* TODO: add TLS here ! */
-./ports/sysdeps/or1k/dl-machine.h:/*TODO FIX BELOW! */
-./ports/sysdeps/or1k/dl-trampoline.S:/* TODO! */
-./ports/sysdeps/or1k/dl-trampoline.S:/* TODO! */
-./ports/sysdeps/or1k/nptl/tls.h:/* TODO: Generate this */
+- Fix clone
 
 - Disable eglibc versioning, example define __ASSUME_ATFCTS
 
@@ -37,6 +23,8 @@
   Not important right now
 
 #### DONE
+
+- Make libc work! :)
 
 - Implement support for DWARF2 exceptions in signal handler (java?)
 - DWARF2 exceptions

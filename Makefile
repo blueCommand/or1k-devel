@@ -14,6 +14,7 @@ clean:
 	rm -fr ${DIR}/../initramfs/lib ${DIR}/../initramfs/usr/lib
 
 binutils: binutils-stamp
+binutils-native: binutils-native-stamp
 gdb: gdb-stamp
 boot-gcc: boot-gcc-stamp
 linux-headers: linux-headers-stamp
@@ -38,6 +39,20 @@ binutils-stamp:
 	make -j && \
 	make install)
 	touch $(@)
+
+binutils-native-stamp:
+	rm -fr /tmp/build-native-src
+	mkdir /tmp/build-native-src
+	(cd /tmp/build-native-src && \
+	${DIR}/or1k-src/configure --target=${TARGET_NATIVE} --prefix=/srv/compilers/native-devel \
+		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
+		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
+		--with-sysroot --disable-newlib --disable-libgloss --enable-cgen-maint && \
+	make -j && \
+	make install)
+	touch $(@)
+
+
 
 boot-gcc-stamp: binutils-stamp
 	rm -fr /tmp/build-or1k-gcc
@@ -115,6 +130,8 @@ gcc-stamp: eglibc-stamp
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
+	cp -aR /srv/compilers/openrisc-devel/${TARGET}/lib/*.so* ${DIR}/../initramfs/lib/
+	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
 	touch $(@)
 
 gcc-native-stamp:
