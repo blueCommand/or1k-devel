@@ -1,5 +1,5 @@
 TARGET=or1k-linux
-TARGET_REG=or1k-linux-eglibc
+TARGET_REG=or1k-linux-gnu
 ARCH=openrisc
 DIR=${PWD}
 
@@ -173,7 +173,8 @@ binutils-regression: clean-regression
 boot-gcc-regression: binutils-regression
 	rm -fr /tmp/build-reg-gcc
 	mkdir /tmp/build-reg-gcc
-	(cd /tmp/build-reg-gcc && \
+	(export PATH="/srv/compilers/openrisc-reg/bin:${PATH}" && \
+	cd /tmp/build-reg-gcc && \
 	${DIR}/or1k-gcc/configure --target=${TARGET_REG} --prefix=/srv/compilers/openrisc-reg \
 		--disable-libssp --disable-decimal-float --enable-tls \
 		--enable-languages=c --without-headers --disable-sjlj-exceptions \
@@ -200,47 +201,54 @@ uclibc-regression: linux-headers-regression boot-gcc-regression
 		CROSS_COMPILER_PREFIX=${TARGET_REG}- \
 		SYSROOT=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root \
 		install)
-	touch $(@)
+	cp -aR /srv/compilers/openrisc-reg/${TARGET_REG}/lib/*.so* ${DIR}/../initramfs-reg/lib/
+	/srv/compilers/openrisc-reg/bin/${TARGET_REG}-strip ${DIR}/../initramfs-reg/lib/*.so* || true
 
 eglibc-regression: linux-headers-regression boot-gcc-regression
-	rm -fr /tmp/build-reg-eglibc
-	mkdir /tmp/build-reg-eglibc
-	(cd /tmp/build-reg-eglibc && \
-		${DIR}/eglibc/libc/configure --host=${TARGET_REG} \
+	(export PATH="/srv/compilers/openrisc-reg/bin:${PATH}" && \
+	cd /tmp/build-reg-eglibc && \
+	${DIR}/eglibc/libc/configure --host=${TARGET_REG} \
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root/usr/include \
 		--disable-profile --without-gd --without-cvs --enable-add-ons  && \
 		make -j7 && \
 		make install_root=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root install -j7 && \
-		make install_root=${DIR}/../initramfs install -j7)
+		make install_root=${DIR}/../initramfs-reg install -j7)
 	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-reg/${TARGET_REG}/sys-root/usr/include/gnu/
-	touch $(@)
+	/srv/compilers/openrisc-reg/bin/${TARGET_REG}-strip ${DIR}/../initramfs-reg/lib/*.so* || true
 
 gcc-uclibc-regression: uclibc-regression
 	rm -fr /tmp/build-reg-gcc
 	mkdir /tmp/build-reg-gcc
-	(cd /tmp/build-reg-gcc && \
+	(export PATH="/srv/compilers/openrisc-reg/bin:${PATH}" && \
+	cd /tmp/build-reg-gcc && \
 	${DIR}/or1k-gcc/configure --target=${TARGET_REG} --prefix=/srv/compilers/openrisc-reg \
 		--enable-languages=c,c++ --enable-threads=posix \
 		--disable-libgomp --disable-libmudflap --enable-tls --disable-sjlj-exceptions \
 		--with-sysroot=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
+	cp -aR /srv/compilers/openrisc-reg/${TARGET_REG}/lib/*.so* ${DIR}/../initramfs-reg/lib/
+	/srv/compilers/openrisc-reg/bin/${TARGET_REG}-strip ${DIR}/../initramfs-reg/lib/*.so* || true
 
 gcc-eglibc-regression: eglibc-regression
 	rm -fr /tmp/build-reg-gcc
 	mkdir /tmp/build-reg-gcc
-	(cd /tmp/build-reg-gcc && \
+	(export PATH="/srv/compilers/openrisc-reg/bin:${PATH}" && \
+	cd /tmp/build-reg-gcc && \
 	${DIR}/or1k-gcc/configure --target=${TARGET_REG} --prefix=/srv/compilers/openrisc-reg \
 		--enable-languages=c,c++ --enable-threads=posix \
 		--disable-libgomp --disable-libmudflap --enable-tls --disable-sjlj-exceptions \
 		--with-sysroot=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
+	cp -aR /srv/compilers/openrisc-reg/${TARGET_REG}/lib/*.so* ${DIR}/../initramfs-reg/lib/
+	/srv/compilers/openrisc-reg/bin/${TARGET_REG}-strip ${DIR}/../initramfs-reg/lib/*.so* || true
 
 clean-regression:
 	rm -fr /srv/compilers/openrisc-reg/*
 	mkdir -p /srv/compilers/openrisc-reg/
+	rm -fr ${DIR}/../initramfs-reg/lib ${DIR}/../initramfs-reg/usr/lib
 	echo WARNING: Make sure that ${TARGET_REG} is correct
 	sleep 10
 
