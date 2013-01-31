@@ -1,5 +1,5 @@
 TARGET=or1k-linux
-TARGET_REG=or1k-linux-uclibc
+TARGET_REG=or1k-linux-eglibc
 ARCH=openrisc
 DIR=${PWD}
 
@@ -189,7 +189,32 @@ uclibc-regression: linux-headers-regression boot-gcc-regression
 		install)
 	touch $(@)
 
+eglibc-regression: linux-headers-regression boot-gcc-regression
+	rm -fr /tmp/build-reg-eglibc
+	mkdir /tmp/build-reg-eglibc
+	(cd /tmp/build-reg-eglibc && \
+		${DIR}/eglibc/libc/configure --host=${TARGET_REG} \
+		--prefix=/usr \
+		--with-headers=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root/usr/include \
+		--disable-profile --without-gd --without-cvs --enable-add-ons  && \
+		make -j7 && \
+		make install_root=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root install -j7 && \
+		make install_root=${DIR}/../initramfs install -j7)
+	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-reg/${TARGET_REG}/sys-root/usr/include/gnu/
+	touch $(@)
+
 gcc-uclibc-regression: uclibc-regression
+	rm -fr /tmp/build-reg-gcc
+	mkdir /tmp/build-reg-gcc
+	(cd /tmp/build-reg-gcc && \
+	${DIR}/or1k-gcc/configure --target=${TARGET_REG} --prefix=/srv/compilers/openrisc-reg \
+		--enable-languages=c,c++ --enable-threads=posix \
+		--disable-libgomp --disable-libmudflap --enable-tls --disable-sjlj-exceptions \
+		--with-sysroot=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root --disable-multilib && \
+	make -j7 && \
+	make install)
+
+gcc-eglibc-regression: eglibc-regression
 	rm -fr /tmp/build-reg-gcc
 	mkdir /tmp/build-reg-gcc
 	(cd /tmp/build-reg-gcc && \
@@ -203,12 +228,22 @@ gcc-uclibc-regression: uclibc-regression
 clean-regression:
 	rm -fr /srv/compilers/openrisc-reg/*
 	mkdir -p /srv/compilers/openrisc-reg/
+	echo WARNING: Make sure that ${TARGET_REG} is correct
+	sleep 10
 
 .PHONY: binutils-regression boot-gcc-regression linux-headers-regression
 .PHONY: uclibc-regression gcc-uclibc-regression clean-regression
 .PHONY: check
 
-check: gcc-uclibc-regression dejagnu
+check-gcc-uclibc: gcc-uclibc-regression dejagnu
+	ln -s /srv/compilers/openrisc-reg/bin/${TARGET_REG}-gcc /srv/compilers/openrisc-reg/bin/gcc
+	ln -s /srv/compilers/openrisc-reg/bin/${TARGET_REG}-g++ /srv/compilers/openrisc-reg/bin/g++
+	(export PATH="/srv/compilers/openrisc-test/bin:${PATH}" && \
+	cd /tmp/build-reg-gcc && \
+	make check-c check-c++ RUNTESTFLAGS="--target_board=or1k-linux-sim --target_triplet=or1k-unknown-linux-gnu" OR1K_IP="192.168.255.200")
+
+
+check-gcc: gcc-eglibc-regression dejagnu
 	ln -s /srv/compilers/openrisc-reg/bin/${TARGET_REG}-gcc /srv/compilers/openrisc-reg/bin/gcc
 	ln -s /srv/compilers/openrisc-reg/bin/${TARGET_REG}-g++ /srv/compilers/openrisc-reg/bin/g++
 	(export PATH="/srv/compilers/openrisc-test/bin:${PATH}" && \
