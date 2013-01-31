@@ -11,8 +11,10 @@ clean:
 	rm -fr /srv/compilers/openrisc-devel/*
 	rm -f *-stamp || true
 	rm -fr /tmp/build-*
+	rm -fr ${DIR}/../initramfs/lib ${DIR}/../initramfs/usr/lib
 
 binutils: binutils-stamp
+binutils-native: binutils-native-stamp
 gdb: gdb-stamp
 boot-gcc: boot-gcc-stamp
 linux-headers: linux-headers-stamp
@@ -38,6 +40,20 @@ binutils-stamp:
 	make install)
 	touch $(@)
 
+binutils-native-stamp:
+	rm -fr /tmp/build-native-src
+	mkdir /tmp/build-native-src
+	(cd /tmp/build-native-src && \
+	${DIR}/or1k-src/configure --target=${TARGET_NATIVE} --prefix=/srv/compilers/native-devel \
+		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
+		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
+		--with-sysroot --disable-newlib --disable-libgloss --enable-cgen-maint && \
+	make -j && \
+	make install)
+	touch $(@)
+
+
+
 boot-gcc-stamp: binutils-stamp
 	rm -fr /tmp/build-or1k-gcc
 	mkdir /tmp/build-or1k-gcc
@@ -52,7 +68,7 @@ boot-gcc-stamp: binutils-stamp
 	touch $(@)
 
 linux-headers-stamp:
-	cd ../linux-3.6.10 && \
+	cd ../or1k-linux && \
 	make ARCH="${ARCH}" INSTALL_HDR_PATH=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr headers_install
 	touch $(@)
 
@@ -69,6 +85,11 @@ uclibc-stamp: linux-headers-stamp boot-gcc-stamp
 		CROSS_COMPILER_PREFIX=${TARGET}- \
 		SYSROOT=/srv/compilers/openrisc-devel/${TARGET}/sys-root \
 		install)
+	cp -aR  /srv/compilers/openrisc-devel/${TARGET}/sys-root/lib ${DIR}/../initramfs/
+	mkdir -p ${DIR}/../initramfs/usr/
+	cp -aR  /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/lib ${DIR}/../initramfs/usr/
+	ln -sf ld-uClibc.so.0 ${DIR}/../initramfs/lib/ld.so.1
+	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
 	touch $(@)
 
 gcc-uclibc-stamp: uclibc-stamp
@@ -81,32 +102,21 @@ gcc-uclibc-stamp: uclibc-stamp
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
+	cp -aR /srv/compilers/openrisc-devel/${TARGET}/lib/*.so* ${DIR}/../initramfs/lib/
+	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
 	touch $(@)
 
 eglibc-stamp: linux-headers-stamp boot-gcc-stamp
 	rm -fr /tmp/build-eglibc
 	mkdir /tmp/build-eglibc
 	(cd /tmp/build-eglibc && \
-	CC=${TARGET}-gcc ${DIR}/eglibc/libc/configure --host=${TARGET} \
+	${DIR}/eglibc/libc/configure --host=${TARGET} \
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
-		--disable-profile --without-gd --without-cvs --enable-add-ons && \
+		--disable-profile --without-gd --without-cvs --enable-add-ons  && \
 	make -j7 && \
-	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7)
-	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
-	touch $(@)
-
-eglibc-pic-stamp: linux-headers-stamp boot-gcc-stamp
-	rm -fr /tmp/build-eglibc
-	mkdir /tmp/build-eglibc
-	(cd /tmp/build-eglibc && \
-	CC=${TARGET}-gcc CFLAGS="-fPIC -g -O" ${DIR}/eglibc/libc/configure --host=${TARGET} \
-		--prefix=/usr \
-		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
-		--disable-profile --without-gd --without-cvs --enable-add-ons \
-		libc_cv_pic_default=yes  && \
-	make -j7 && \
-	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7)
+	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7 && \
+	make install_root=${DIR}/../initramfs install -j7)
 	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
 	touch $(@)
 
@@ -120,12 +130,15 @@ gcc-stamp: eglibc-stamp
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
 	make -j7 && \
 	make install)
+	cp -aR /srv/compilers/openrisc-devel/${TARGET}/lib/*.so* ${DIR}/../initramfs/lib/
+	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
 	touch $(@)
 
 gcc-native-stamp:
 	rm -fr /tmp/build-native-gcc
 	mkdir /tmp/build-native-gcc
-	(cd /tmp/build-native-gcc && \
+	(export PATH="/srv/compilers/native-devel/bin:${PATH}" && \
+	cd /tmp/build-native-gcc && \
 	${DIR}/or1k-gcc/configure --prefix=/srv/compilers/native-devel \
 		--enable-languages=c,c++ --enable-threads=posix \
 		--disable-libgomp --disable-libmudflap --enable-tls --disable-sjlj-exceptions \

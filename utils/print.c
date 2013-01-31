@@ -1,7 +1,9 @@
 #include <stdio.h>
 
+int a = 1;
+
 int main(int argc, char *argv[])
 {
-  printf("Hello World: %s\n", argv[1]);
+  printf("Hello World: %p, %s\n", &a, argv[1]);
   return 10;
 }

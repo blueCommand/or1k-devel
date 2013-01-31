@@ -1,19 +1,21 @@
 #### PROGRESS
 
-- Why does eglibc crash on a simple relocation to __libc_multiple_libcs ?
+
+- Port eglibc!
+- Fix vfork
+- Fix clone
+
+- Disable eglibc versioning, example define __ASSUME_ATFCTS
 
 - Implement TLS, wooho!
   - TLS relocations:      done
-  - Resolve relocations:
+  - Resolve relocations:  static IE/LE done
   - LD? will probably just keep it as GD for now.
 
 #### DELAYED
 
-- Port eglibc!
-- Make libc work! :)
+./ports/sysdeps/or1k/preconfigure:  # TODO: page size correct?
 
-- Implement support for DWARF2 exceptions in signal handler (java?)
-  Not needed for now.
 
 - For now we use --enable-tls, implement check in configure.ac
 
@@ -22,6 +24,9 @@
 
 #### DONE
 
+- Make libc work! :)
+
+- Implement support for DWARF2 exceptions in signal handler (java?)
 - DWARF2 exceptions
 - GNU_STACK - do we want it? How?
 - Is relro working?
