@@ -1,10 +1,14 @@
 #### PROGRESS
 
-- Fix vfork
+- Fix vfork (bus error in inetd probably related to this)
 - Fix clone
 
-- PTY on OpenSSH is bugged
-- Bus error in inetd
+- Add  sotruss-lib.c
+- Create kernel-features.h
+- Add shlib-versions
+- Add tst-audit.h
+
+
 
 #### DELAYED
 
