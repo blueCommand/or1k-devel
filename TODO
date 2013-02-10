@@ -1,27 +1,19 @@
 #### PROGRESS
 
-
-- Port eglibc!
 - Fix vfork
 - Fix clone
 
-- Disable eglibc versioning, example define __ASSUME_ATFCTS
-
-- Implement TLS, wooho!
-  - TLS relocations:      done
-  - Resolve relocations:  static IE/LE done
-  - LD? will probably just keep it as GD for now.
+- PTY on OpenSSH is bugged
+- Bus error in inetd
 
 #### DELAYED
-
-./ports/sysdeps/or1k/preconfigure:  # TODO: page size correct?
-
 
 - For now we use --enable-tls, implement check in configure.ac
 
 - Implement compare and swap atomic in kernel (use syscall or1k_atomic as base).
   Not important right now
 
+#- Disable eglibc versioning, example define __ASSUME_ATFCTS
 #### DONE
 
 - Make libc work! :)
@@ -31,4 +23,10 @@
 - GNU_STACK - do we want it? How?
 - Is relro working?
 - Is CFI working?
+
+- Implement TLS, wooho!
+  - TLS relocations:      done
+  - Resolve relocations:  static IE/LE done
+  - LD? will probably just keep it as GD for now.
+
 
