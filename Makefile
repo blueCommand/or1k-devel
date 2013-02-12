@@ -1,4 +1,4 @@
-TARGET=or1k-linux
+TARGET=or1k-linux-gnu
 TARGET_REG=or1k-linux-gnu
 ARCH=openrisc
 DIR=${PWD}
@@ -52,7 +52,35 @@ binutils-native-stamp:
 	make install)
 	touch $(@)
 
+binutils-foreign-stamp:
+	rm -fr /tmp/build-foreign-src
+	mkdir /tmp/build-foreign-src
+	(cd /tmp/build-foreign-src && \
+	${DIR}/or1k-src/configure --target=${TARGET} --host=${TARGET} --prefix=/usr \
+		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
+		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
+		--with-sysroot --disable-newlib --disable-libgloss --disable-werror && \
+	make -j && \
+	make DESTDIR=${DIR}/../initramfs/ install)
+	touch $(@)
 
+gcc-foreign-stamp:
+	rm -fr /tmp/build-foreign-gcc
+	mkdir /tmp/build-foreign-gcc
+	(cd /tmp/build-foreign-gcc && \
+	${DIR}/or1k-gcc/configure --target=${TARGET} --host=${TARGET} --prefix=/usr \
+		--enable-languages=c,c++ --enable-threads=posix \
+		--disable-libgomp --disable-libmudflap --enable-tls --disable-sjlj-exceptions \
+		--disable-lto \
+		--with-sysroot=/ \
+		--with-build-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root \
+		--with-gmp=${DIR}/../initramfs/ \
+		--with-mpc=${DIR}/../initramfs/ \
+		--with-mpfr=${DIR}/../initramfs/ \
+		&& \
+	make -j7 && \
+	make DESTDIR=${DIR}/../initramfs/ install)
+	touch $(@)
 
 boot-gcc-stamp: binutils-stamp
 	rm -fr /tmp/build-or1k-gcc
