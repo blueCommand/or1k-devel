@@ -1,27 +1,29 @@
 #### PROGRESS
 
+- Makecontext?
+
+- semctl
+
+#### DELAYED
+#
 - Fix vfork (bus error in inetd probably related to this)
-- Fix clone
+  - For now, using fork
 
 - Add  sotruss-lib.c
 - Create kernel-features.h
 - Add shlib-versions
 - Add tst-audit.h
 
-- Makecontext?
-
-
-
-#### DELAYED
-
+- Stack and ptr guard
+- set_robust_list
 - For now we use --enable-tls, implement check in configure.ac
-
-- Implement compare and swap atomic in kernel (use syscall or1k_atomic as base).
-  Not important right now
 
 #- Disable eglibc versioning, example define __ASSUME_ATFCTS
 #### DONE
 
+- Implement compare and swap atomic in kernel (use syscall or1k_atomic as base).
+
+- Fix clone
 - Make libc work! :)
 
 - Implement support for DWARF2 exceptions in signal handler (java?)

@@ -1,5 +1,5 @@
 
-extern __thread int external __attribute__ ((tls_model ("initial-exec")));
+extern __thread int external __attribute__ ((tls_model ("global-dynamic")));
 
 int main (int ac, char *av[])
 {

@@ -68,17 +68,18 @@ gmp:
 	  make DESTDIR=${INITRAMFS} install && \
 	  make DESTDIR=${SYSROOT} install)
 
-mpfr:
+mpfr: gmp
 	rm -fr /tmp/build-mpfr
 	mkdir /tmp/build-mpfr
 	(cd /tmp/build-mpfr && \
 	  ${SRCDIR}/mpfr-3.1.1/configure --host=${TARGET} \
+	   --with-gmp=${INITRAMFS}/ \
 	    --build=${BUILD} --prefix=/ && \
 	  make -j7 && \
 	  make DESTDIR=${INITRAMFS} install && \
 	  make DESTDIR=${SYSROOT} install)
 
-mpc: mpfr gmp
+mpc: gmp mpfr
 	rm -fr /tmp/build-mpc
 	mkdir /tmp/build-mpc
 	(cd /tmp/build-mpc && \
