@@ -258,6 +258,8 @@ uclibc-regression: linux-headers-regression boot-gcc-regression
 	/srv/compilers/openrisc-reg/bin/${TARGET_REG}-strip ${DIR}/../initramfs-reg/lib/*.so* || true
 
 eglibc-regression: linux-headers-regression boot-gcc-regression
+	rm -fr /tmp/build-reg-eglibc
+	mkdir /tmp/build-reg-eglibc
 	(export PATH="/srv/compilers/openrisc-reg/bin:${PATH}" && \
 	cd /tmp/build-reg-eglibc && \
 	${DIR}/eglibc/libc/configure --host=${TARGET_REG} \
@@ -301,6 +303,7 @@ gcc-eglibc-regression: eglibc-regression
 clean-regression:
 	rm -fr /srv/compilers/openrisc-reg/*
 	mkdir -p /srv/compilers/openrisc-reg/
+	rm -fr /tmp/build-reg-*
 	rm -fr ${DIR}/../initramfs-reg/lib ${DIR}/../initramfs-reg/usr/lib
 	echo WARNING: Make sure that ${TARGET_REG} is correct
 	sleep 10
