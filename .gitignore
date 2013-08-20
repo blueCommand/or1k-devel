@@ -7,6 +7,7 @@ glibc
 or1ksim
 linux
 initramfs
+utils
 or1k-gcc
 or1k-dejagnu
 or1k-src
