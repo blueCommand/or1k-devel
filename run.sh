@@ -7,7 +7,7 @@ fi
 
 cd `dirname $0`
 echo "Starting simulator .."
-screen -dmS openrisc-sim /tmp/build-or1ksim/sim -f sim.cfg linux/vmlinux
+screen -dmS openrisc-sim /usr/local/bin/sim -f sim.cfg linux/vmlinux
 sleep 1
 echo "Configuring network .."
 sudo ip link set up dev tap0

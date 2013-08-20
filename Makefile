@@ -6,35 +6,35 @@ DIR=${PWD}
 
 NATIVE_TARGET=x86_64-linux
 
-all: gcc
+all: linux
 
 clean:
 	rm -fr /srv/compilers/openrisc-devel/*
-	rm -f *-stamp || true
+	rm -f .*-stamp || true
 	rm -fr /tmp/build-*
 	rm -fr ${DIR}/../initramfs/lib ${DIR}/../initramfs/usr/lib
 
-binutils: binutils-stamp
-binutils-native: binutils-native-stamp
-gdb: gdb-stamp
-boot-gcc: boot-gcc-stamp
-linux-headers: linux-headers-stamp
-uclibc: uclibc-stamp
-glibc: glibc-stamp
-gcc: gcc-stamp
-gcc-uclibc: gcc-uclibc-stamp
-gcc-native: gcc-native-stamp
-gcc-foreign: gcc-foreign-stamp
-dejagnu: dejagnu-stamp
-or1ksim: or1ksim-stamp
-root: root-stamp
-linux: linux-stamp
+binutils: .binutils-stamp
+binutils-native: .binutils-native-stamp
+gdb: .gdb-stamp
+boot-gcc: .boot-gcc-stamp
+linux-headers: .linux-headers-stamp
+uclibc: .uclibc-stamp
+glibc: .glibc-stamp
+gcc: .gcc-stamp
+gcc-uclibc: .gcc-uclibc-stamp
+gcc-native: .gcc-native-stamp
+gcc-foreign: .gcc-foreign-stamp
+dejagnu: .dejagnu-stamp
+or1ksim: .or1ksim-stamp
+root: .root-stamp
+linux: .linux-stamp
 
 .PHONY: all clean binutils gdb boot-gcc linux-headers uclibc glibc
 .PHONY: gcc gcc-uclibc gcc-native gcc-foreign dejagnu linux root
 .PHONY: or1ksim
 
-binutils-stamp:
+.binutils-stamp:
 	rm -fr /tmp/build-or1k-src
 	mkdir /tmp/build-or1k-src
 	(cd /tmp/build-or1k-src && \
@@ -46,7 +46,7 @@ binutils-stamp:
 	make install)
 	touch $(@)
 
-gdb-stamp:
+.gdb-stamp:
 	rm -fr /tmp/build-or1k-gdb
 	mkdir /tmp/build-or1k-gdb
 	(cd /tmp/build-or1k-gdb && \
@@ -57,7 +57,7 @@ gdb-stamp:
 	make install-gdb)
 	touch $(@)
 
-gdbserver-stamp:
+.gdbserver-stamp:
 	rm -fr /tmp/build-or1k-gdbserver
 	mkdir /tmp/build-or1k-gdbserver
 	(cd /tmp/build-or1k-gdbserver && \
@@ -68,7 +68,7 @@ gdbserver-stamp:
 	make install)
 	touch $(@)
 
-binutils-native-stamp:
+.binutils-native-stamp:
 	rm -fr /tmp/build-native-src
 	mkdir /tmp/build-native-src
 	(cd /tmp/build-native-src && \
@@ -80,7 +80,7 @@ binutils-native-stamp:
 	make install)
 	touch $(@)
 
-binutils-foreign-stamp:
+.binutils-foreign-stamp:
 	rm -fr /tmp/build-foreign-src
 	mkdir /tmp/build-foreign-src
 	(cd /tmp/build-foreign-src && \
@@ -92,7 +92,7 @@ binutils-foreign-stamp:
 	make DESTDIR=${DIR}/../initramfs/ install)
 	touch $(@)
 
-boot-gcc-stamp: binutils-stamp
+.boot-gcc-stamp: .binutils-stamp
 	rm -fr /tmp/build-or1k-gcc
 	mkdir /tmp/build-or1k-gcc
 	(cd /tmp/build-or1k-gcc && \
@@ -105,13 +105,13 @@ boot-gcc-stamp: binutils-stamp
 	make install)
 	touch $(@)
 
-linux-headers-stamp:
+.linux-headers-stamp:
 	cd linux && \
 	make ARCH="${ARCH}" INSTALL_HDR_PATH=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr headers_install && \
 	make ARCH="${ARCH}" INSTALL_HDR_PATH=${DIR}/../initramfs/usr headers_install
 	touch $(@)
 
-uclibc-stamp: linux-headers-stamp boot-gcc-stamp
+.uclibc-stamp: .linux-headers-stamp .boot-gcc-stamp
 	(cd uClibc-or1k && \
 	make CROSS_COMPILER_PREFIX=${TARGET}- clean && \
 	make ARCH=or1k defconfig && \
@@ -131,7 +131,7 @@ uclibc-stamp: linux-headers-stamp boot-gcc-stamp
 	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
 	touch $(@)
 
-gcc-uclibc-stamp: uclibc-stamp
+.gcc-uclibc-stamp: .uclibc-stamp
 	rm -fr /tmp/build-or1k-gcc
 	mkdir /tmp/build-or1k-gcc
 	(cd /tmp/build-or1k-gcc && \
@@ -145,7 +145,7 @@ gcc-uclibc-stamp: uclibc-stamp
 	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
 	touch $(@)
 
-glibc-stamp: linux-headers-stamp boot-gcc-stamp
+.glibc-stamp: .linux-headers-stamp .boot-gcc-stamp
 	rm -fr /tmp/build-glibc
 	mkdir /tmp/build-glibc
 	(cd /tmp/build-glibc && \
@@ -157,7 +157,7 @@ glibc-stamp: linux-headers-stamp boot-gcc-stamp
 	make install_root=${DIR}/../initramfs install -j7)
 	touch $(@)
 
-gcc-stamp: glibc-stamp
+.gcc-stamp: .glibc-stamp
 	rm -fr /tmp/build-or1k-gcc
 	mkdir /tmp/build-or1k-gcc
 	(cd /tmp/build-or1k-gcc && \
@@ -171,7 +171,7 @@ gcc-stamp: glibc-stamp
 	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
 	touch $(@)
 
-gcc-native-stamp:
+.gcc-native-stamp:
 	rm -fr /tmp/build-native-gcc
 	mkdir /tmp/build-native-gcc
 	(export PATH="/srv/compilers/native-devel/bin:${PATH}" && \
@@ -184,25 +184,7 @@ gcc-native-stamp:
 	make install)
 	touch $(@)
 
-gcc-foreign-stamp: binutils-foreign-stamp
-	rm -fr /tmp/build-foreign-gcc
-	mkdir /tmp/build-foreign-gcc
-	(cd /tmp/build-foreign-gcc && \
-	${DIR}/or1k-gcc/configure --target=${TARGET} --host=${TARGET} --prefix=/usr \
-		--enable-languages=c,c++ --enable-threads=posix \
-		--disable-libgomp --disable-libmudflap \
-		--disable-lto \
-		--with-sysroot=/ \
-		--with-build-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root \
-		--with-gmp=${DIR}/../initramfs/ \
-		--with-mpc=${DIR}/../initramfs/ \
-		--with-mpfr=${DIR}/../initramfs/ \
-		&& \
-	make -j7 && \
-	make DESTDIR=${DIR}/../initramfs/ install)
-	touch $(@)
-
-dejagnu-stamp:
+.dejagnu-stamp:
 	rm -fr /tmp/build-or1k-dejagnu
 	mkdir /tmp/build-or1k-dejagnu
 	(cd /tmp/build-or1k-dejagnu && \
@@ -212,20 +194,20 @@ dejagnu-stamp:
 	cp -v regression/or1k-linux-sim.exp /srv/compilers/openrisc-test/share/dejagnu/baseboards/
 	touch $(@)
 
-or1ksim-stamp:
+.or1ksim-stamp:
 	rm -fr /tmp/build-or1ksim
 	mkdir /tmp/build-or1ksim
 	(cd /tmp/build-or1ksim && \
 	${DIR}/or1ksim/configure && \
-	make -j7)
+	make -j7 && sudo make install)
 	touch $(@)
 
-root-stamp: gcc-stamp
-	cd tools && make && \
+.root-stamp: .gcc-stamp
+	(cd tools && make)
 	touch $(@)
 
-linux-stamp: root-stamp
-	cd linux && \
-	ARCH="openrisc" make -j7 && \
+.linux-stamp: .root-stamp
+	(cd linux && \
+	ARCH="openrisc" make -j7)
 	touch $(@)
 
