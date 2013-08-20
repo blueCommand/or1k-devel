@@ -4,8 +4,6 @@
 
 - semctl
 
-#### DELAYED
-#
 - Fix vfork (bus error in inetd probably related to this)
   - For now, using fork
 
@@ -13,15 +11,13 @@
 - Create kernel-features.h
 - Add shlib-versions
 - Add tst-audit.h
-
 - Stack and ptr guard
 - set_robust_list
-- For now we use --enable-tls, implement check in configure.ac
 
-#- Disable eglibc versioning, example define __ASSUME_ATFCTS
 #### DONE
 
 - Implement compare and swap atomic in kernel (use syscall or1k_atomic as base).
+- For now we use --enable-tls, implement check in configure.ac
 
 - Fix clone
 - Make libc work! :)

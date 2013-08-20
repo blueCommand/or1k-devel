@@ -1,9 +1,13 @@
 # Object files
 *.o
 .*.swp
-build*
+*-stamp
 
-eglibc
+glibc
+or1ksim
+linux
+initramfs
 or1k-gcc
+or1k-dejagnu
 or1k-src
 uClibc-or1k

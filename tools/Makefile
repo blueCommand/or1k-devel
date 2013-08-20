@@ -1,5 +1,5 @@
 
-INITRAMFS=/home/bluecmd/Workbench/openrisc/initramfs
+INITRAMFS=${PWD}/../initramfs
 SYSROOT=/srv/compilers/openrisc-devel/or1k-linux-gnu/sys-root/
 SRCDIR=${PWD}
 
@@ -56,7 +56,7 @@ openssh: zlib
 	  make DESTDIR=${INITRAMFS} install)
 
 busybox:
-	(cd busybox-1.21.0 && make clean && make -j7 && make install)
+	(cd busybox && make clean && make -j7 && make install)
 
 gmp:
 	rm -fr /tmp/build-gmp

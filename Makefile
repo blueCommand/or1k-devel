@@ -6,7 +6,7 @@ DIR=${PWD}
 
 NATIVE_TARGET=x86_64-linux
 
-all: stage-gcc gdb
+all: gcc
 
 clean:
 	rm -fr /srv/compilers/openrisc-devel/*
@@ -20,15 +20,19 @@ gdb: gdb-stamp
 boot-gcc: boot-gcc-stamp
 linux-headers: linux-headers-stamp
 uclibc: uclibc-stamp
-eglibc: eglibc-stamp
+glibc: glibc-stamp
 gcc: gcc-stamp
 gcc-uclibc: gcc-uclibc-stamp
 gcc-native: gcc-native-stamp
 gcc-foreign: gcc-foreign-stamp
 dejagnu: dejagnu-stamp
+or1ksim: or1ksim-stamp
+root: root-stamp
+linux: linux-stamp
 
-.PHONY: all clean binutils gdb boot-gcc linux-headers uclibc eglibc
-.PHONY: gcc gcc-uclibc gcc-native gcc-foreign dejagnu
+.PHONY: all clean binutils gdb boot-gcc linux-headers uclibc glibc
+.PHONY: gcc gcc-uclibc gcc-native gcc-foreign dejagnu linux root
+.PHONY: or1ksim
 
 binutils-stamp:
 	rm -fr /tmp/build-or1k-src
@@ -102,7 +106,7 @@ boot-gcc-stamp: binutils-stamp
 	touch $(@)
 
 linux-headers-stamp:
-	cd ../or1k-linux && \
+	cd linux && \
 	make ARCH="${ARCH}" INSTALL_HDR_PATH=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr headers_install && \
 	make ARCH="${ARCH}" INSTALL_HDR_PATH=${DIR}/../initramfs/usr headers_install
 	touch $(@)
@@ -141,21 +145,19 @@ gcc-uclibc-stamp: uclibc-stamp
 	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
 	touch $(@)
 
-eglibc-stamp: linux-headers-stamp boot-gcc-stamp
-	rm -fr /tmp/build-eglibc
-	mkdir /tmp/build-eglibc
-	(cd /tmp/build-eglibc && \
-	${DIR}/eglibc/libc/configure --host=${TARGET} \
+glibc-stamp: linux-headers-stamp boot-gcc-stamp
+	rm -fr /tmp/build-glibc
+	mkdir /tmp/build-glibc
+	(cd /tmp/build-glibc && \
+	${DIR}/glibc/configure --host=${TARGET} \
 		--prefix=/usr \
-		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include \
-		--without-gd --without-cvs --enable-add-ons  && \
+		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include && \
 	make -j7 && \
 	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7 && \
 	make install_root=${DIR}/../initramfs install -j7)
-	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include/gnu/
 	touch $(@)
 
-gcc-stamp: eglibc-stamp
+gcc-stamp: glibc-stamp
 	rm -fr /tmp/build-or1k-gcc
 	mkdir /tmp/build-or1k-gcc
 	(cd /tmp/build-or1k-gcc && \
@@ -210,120 +212,20 @@ dejagnu-stamp:
 	cp -v regression/or1k-linux-sim.exp /srv/compilers/openrisc-test/share/dejagnu/baseboards/
 	touch $(@)
 
+or1ksim-stamp:
+	rm -fr /tmp/build-or1ksim
+	mkdir /tmp/build-or1ksim
+	(cd /tmp/build-or1ksim && \
+	${DIR}/or1ksim/configure && \
+	make -j7)
+	touch $(@)
 
-# These are for regression testing
-binutils-regression: clean-regression
-	rm -fr /tmp/build-reg-src
-	mkdir /tmp/build-reg-src
-	(cd /tmp/build-reg-src && \
-	${DIR}/or1k-src/configure --target=${TARGET_REG} --prefix=/srv/compilers/openrisc-reg \
-		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
-		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
-		--with-sysroot --disable-newlib --disable-libgloss && \
-	make -j && \
-	make install)
+root-stamp: gcc-stamp
+	cd tools && make && \
+	touch $(@)
 
-boot-gcc-regression: binutils-regression
-	rm -fr /tmp/build-reg-gcc
-	mkdir /tmp/build-reg-gcc
-	(export PATH="/srv/compilers/openrisc-reg/bin:${PATH}" && \
-	cd /tmp/build-reg-gcc && \
-	${DIR}/or1k-gcc/configure --target=${TARGET_REG} --prefix=/srv/compilers/openrisc-reg \
-		--disable-libssp --disable-decimal-float \
-		--enable-languages=c --without-headers \
-		--enable-threads=single --disable-libgomp --disable-libmudflap \
-		--disable-shared --disable-libquadmath --disable-libatomic && \
-	make -j7 && \
-	make install)
-
-linux-headers-regression: clean-regression
-	cd ../linux-3.6.10 && \
-	make ARCH="${ARCH}" INSTALL_HDR_PATH=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root/usr headers_install
-
-uclibc-regression: linux-headers-regression boot-gcc-regression
-	(export PATH="/srv/compilers/openrisc-reg/bin:${PATH}" && \
-	cd uClibc-or1k && \
-	make CROSS_COMPILER_PREFIX=${TARGET_REG}- clean && \
-	make ARCH=or1k defconfig && \
-	make \
-		CROSS_COMPILER_PREFIX=${TARGET_REG}- \
-		SYSROOT=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root \
-		-j7 && \
-	make \
-		PREFIX=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root \
-		CROSS_COMPILER_PREFIX=${TARGET_REG}- \
-		SYSROOT=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root \
-		install)
-	cp -aR /srv/compilers/openrisc-reg/${TARGET_REG}/lib/*.so* ${DIR}/../initramfs-reg/lib/
-	/srv/compilers/openrisc-reg/bin/${TARGET_REG}-strip ${DIR}/../initramfs-reg/lib/*.so* || true
-
-eglibc-regression: linux-headers-regression boot-gcc-regression
-	rm -fr /tmp/build-reg-eglibc
-	mkdir /tmp/build-reg-eglibc
-	(export PATH="/srv/compilers/openrisc-reg/bin:${PATH}" && \
-	cd /tmp/build-reg-eglibc && \
-	${DIR}/eglibc/libc/configure --host=${TARGET_REG} \
-		--prefix=/usr \
-		--with-headers=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root/usr/include \
-		--disable-profile --without-gd --without-cvs --enable-add-ons  && \
-		make -j7 && \
-		make install_root=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root install -j7 && \
-		make install_root=${DIR}/../initramfs-reg install -j7)
-	cp eglibc/libc/include/gnu/stubs.h /srv/compilers/openrisc-reg/${TARGET_REG}/sys-root/usr/include/gnu/
-	/srv/compilers/openrisc-reg/bin/${TARGET_REG}-strip ${DIR}/../initramfs-reg/lib/*.so* || true
-
-gcc-uclibc-regression: uclibc-regression
-	rm -fr /tmp/build-reg-gcc
-	mkdir /tmp/build-reg-gcc
-	(export PATH="/srv/compilers/openrisc-reg/bin:${PATH}" && \
-	cd /tmp/build-reg-gcc && \
-	${DIR}/or1k-gcc/configure --target=${TARGET_REG} --prefix=/srv/compilers/openrisc-reg \
-		--enable-languages=c,c++ --enable-threads=posix \
-		--disable-libgomp --disable-libmudflap \
-		--with-sysroot=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root --disable-multilib && \
-	make -j7 && \
-	make install)
-	cp -aR /srv/compilers/openrisc-reg/${TARGET_REG}/lib/*.so* ${DIR}/../initramfs-reg/lib/
-	/srv/compilers/openrisc-reg/bin/${TARGET_REG}-strip ${DIR}/../initramfs-reg/lib/*.so* || true
-
-gcc-eglibc-regression: eglibc-regression
-	rm -fr /tmp/build-reg-gcc
-	mkdir /tmp/build-reg-gcc
-	(export PATH="/srv/compilers/openrisc-reg/bin:${PATH}" && \
-	cd /tmp/build-reg-gcc && \
-	${DIR}/or1k-gcc/configure --target=${TARGET_REG} --prefix=/srv/compilers/openrisc-reg \
-		--enable-languages=c,c++ --enable-threads=posix \
-		--disable-libgomp --disable-libmudflap \
-		--with-sysroot=/srv/compilers/openrisc-reg/${TARGET_REG}/sys-root --disable-multilib && \
-	make -j7 && \
-	make install)
-	cp -aR /srv/compilers/openrisc-reg/${TARGET_REG}/lib/*.so* ${DIR}/../initramfs-reg/lib/
-	/srv/compilers/openrisc-reg/bin/${TARGET_REG}-strip ${DIR}/../initramfs-reg/lib/*.so* || true
-
-clean-regression:
-	rm -fr /srv/compilers/openrisc-reg/*
-	mkdir -p /srv/compilers/openrisc-reg/
-	rm -fr /tmp/build-reg-*
-	rm -fr ${DIR}/../initramfs-reg/lib ${DIR}/../initramfs-reg/usr/lib
-	echo WARNING: Make sure that ${TARGET_REG} is correct
-	sleep 10
-
-.PHONY: binutils-regression boot-gcc-regression linux-headers-regression
-.PHONY: uclibc-regression gcc-uclibc-regression clean-regression
-.PHONY: check
-
-check-gcc-uclibc: gcc-uclibc-regression dejagnu
-	ln -s /srv/compilers/openrisc-reg/bin/${TARGET_REG}-gcc /srv/compilers/openrisc-reg/bin/gcc
-	ln -s /srv/compilers/openrisc-reg/bin/${TARGET_REG}-g++ /srv/compilers/openrisc-reg/bin/g++
-	(export PATH="/srv/compilers/openrisc-test/bin:${PATH}" && \
-	cd /tmp/build-reg-gcc && \
-	make check-c check-c++ RUNTESTFLAGS="--target_board=or1k-linux-sim --target_triplet=or1k-unknown-linux-gnu" OR1K_IP="192.168.255.200")
-
-
-check-gcc: gcc-eglibc-regression dejagnu
-	ln -s /srv/compilers/openrisc-reg/bin/${TARGET_REG}-gcc /srv/compilers/openrisc-reg/bin/gcc
-	ln -s /srv/compilers/openrisc-reg/bin/${TARGET_REG}-g++ /srv/compilers/openrisc-reg/bin/g++
-	(export PATH="/srv/compilers/openrisc-test/bin:${PATH}" && \
-	cd /tmp/build-reg-gcc && \
-	make check-c check-c++ RUNTESTFLAGS="--target_board=or1k-linux-sim --target_triplet=or1k-unknown-linux-gnu" OR1K_IP="192.168.255.200")
+linux-stamp: root-stamp
+	cd linux && \
+	ARCH="openrisc" make -j7 && \
+	touch $(@)
 
