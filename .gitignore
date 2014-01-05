@@ -2,6 +2,7 @@
 *.o
 .*.swp
 .*-stamp
+.building
 
 glibc
 or1ksim
