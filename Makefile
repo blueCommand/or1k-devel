@@ -123,7 +123,7 @@ gdbserver: .gdbserver-stamp
 	cp Linux-config linux/.config
 	sed -i 's/elf32-or32/elf32-or1k/g' linux/arch/openrisc/kernel/vmlinux.lds*
 	(cd linux && \
-	ARCH="openrisc" make -j)
+	ARCH="openrisc" make -j7)
 	touch $(@)
 
 # (2014-01-05, bluecmd) GDB do not work as of yet
