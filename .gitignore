@@ -4,9 +4,9 @@
 .*-stamp
 .building
 
-glibc
 or1ksim
 linux
+linux-*
 linux.jonas
 linux.or1k
 initramfs
@@ -14,4 +14,5 @@ utils
 or1k-gcc
 or1k-dejagnu
 or1k-src
+or1k-glibc
 uClibc-or1k
