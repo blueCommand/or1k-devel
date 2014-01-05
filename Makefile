@@ -97,7 +97,7 @@ linux: .linux-stamp
 	mkdir /tmp/build-or1k-gcc
 	(cd /tmp/build-or1k-gcc && \
 	${DIR}/or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
-		--disable-libssp --disable-decimal-float \
+		--disable-libssp --disable-decimal-float --enable-vtable-verify \
 		--enable-languages=c --without-headers \
 		--enable-threads=single --disable-libgomp --disable-libmudflap \
 		--disable-shared --disable-libquadmath --disable-libatomic && \
@@ -146,12 +146,13 @@ linux: .linux-stamp
 	touch $(@)
 
 .glibc-stamp: .linux-headers-stamp .boot-gcc-stamp
-	rm -fr /tmp/build-glibc
-	mkdir /tmp/build-glibc
-	(cd /tmp/build-glibc && \
-	${DIR}/glibc/configure --host=${TARGET} \
+	rm -fr /tmp/build-or1k-glibc
+	mkdir /tmp/build-or1k-glibc
+	(cd /tmp/build-or1k-glibc && \
+	${DIR}/or1k-glibc/configure --host=${TARGET} \
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include && \
+	make -C ${DIR}/or1k-glibc/locale -r objdir="/tmp/build-or1k-glibc" C-translit.h && \
 	make -j7 && \
 	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7 && \
 	make install_root=${DIR}/../initramfs install -j7)
