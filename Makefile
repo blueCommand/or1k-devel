@@ -9,6 +9,7 @@ NATIVE_TARGET=x86_64-linux
 all: linux
 
 clean:
+	(cd linux/; ARHC="openrisc" make clean)
 	rm -fr /srv/compilers/openrisc-devel/*
 	rm -f .building .*-stamp || true
 	rm -fr /tmp/build-*
@@ -52,7 +53,7 @@ gdbserver: .gdbserver-stamp
 		--enable-languages=c --without-headers \
 		--enable-threads=single --disable-libgomp --disable-libmudflap \
 		--disable-shared --disable-libquadmath --disable-libatomic && \
-	make -j7 && \
+	make -j && \
 	make install)
 	touch $(@)
 
@@ -72,9 +73,9 @@ gdbserver: .gdbserver-stamp
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include && \
 	make -C ${DIR}/or1k-glibc/locale -r objdir="/tmp/build-or1k-glibc" C-translit.h && \
-	make -j7 && \
-	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j7 && \
-	make install_root=${DIR}/../initramfs install -j7)
+	make -j && \
+	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j && \
+	make install_root=${DIR}/../initramfs install -j)
 	touch $(@)
 
 .gcc-stamp: .glibc-stamp
@@ -86,7 +87,7 @@ gdbserver: .gdbserver-stamp
 		--enable-languages=c,c++ --enable-threads=posix \
 		--disable-libgomp --disable-libmudflap \
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
-	make -j7 && \
+	make -j && \
 	make install)
 	cp -aR /srv/compilers/openrisc-devel/${TARGET}/lib/*.so* ${DIR}/../initramfs/lib/
 	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
@@ -98,7 +99,7 @@ gdbserver: .gdbserver-stamp
 	mkdir /tmp/build-or1k-dejagnu
 	(cd /tmp/build-or1k-dejagnu && \
 	${DIR}/or1k-dejagnu/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-test &&\
-	make -j7 && \
+	make -j && \
 	make install)
 	cp -v regression/or1k-linux-sim.exp /srv/compilers/openrisc-test/share/dejagnu/baseboards/
 	touch $(@)
@@ -109,7 +110,7 @@ gdbserver: .gdbserver-stamp
 	mkdir /tmp/build-or1ksim
 	(cd /tmp/build-or1ksim && \
 	${DIR}/or1ksim/configure && \
-	make -j7 && sudo make install)
+	make -j && sudo make install)
 	touch $(@)
 
 .root-stamp: .gcc-stamp
@@ -119,8 +120,10 @@ gdbserver: .gdbserver-stamp
 
 .linux-stamp: .root-stamp
 	echo "$(@)" > .building
+	cp Linux-config linux/.config
+	sed -i 's/elf32-or32/elf32-or1k/g' linux/arch/openrisc/kernel/vmlinux.lds*
 	(cd linux && \
-	ARCH="openrisc" make -j7)
+	ARCH="openrisc" make -j)
 	touch $(@)
 
 # (2014-01-05, bluecmd) GDB do not work as of yet
