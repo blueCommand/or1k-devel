@@ -29,6 +29,6 @@ echo "Waiting 30 seconds for sshd to start"
 sleep 30
 
 gcutil push "$NAME" turnup.sh /tmp
-gcutil ssh "$NAME" sudo /tmp/turnup.sh "$GIT_BASE"
+gcutil ssh "$NAME" /tmp/turnup.sh "$GIT_BASE"
 
 

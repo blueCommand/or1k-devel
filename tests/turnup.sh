@@ -6,37 +6,42 @@ KERNEL="3.12.6"
 
 echo "Running OpenRISC regression turnup on $HOST with repos @ $GIT_BASE"
 
-apt-get update
-apt-get install --yes screen git wget build-essential texinfo flex bison \
-  libmpc-dev gawk bc
-mkdir -p ~/work
-cd ~/work
+sudo apt-get update
+sudo apt-get install --yes screen git wget build-essential texinfo flex bison \
+  libmpc-dev gawk bc expect
+
+sudo chown $USER.$USER /srv
 
 mkdir -p /srv/compilers
-export PATH="$PATH:/srv/compilers/openrisc-devel/bin"
+mkdir -p /srv/build
+sudo mount none -t tmpfs /srv/build
 
 echo "Cloning .."
 
-git clone $GIT_BASE/or1k-devel.git &
-wget https://www.kernel.org/pub/linux/kernel/v3.x/linux-$KERNEL.tar.xz
-wait
+git clone $GIT_BASE/or1k-devel.git
 
 cd or1k-devel
 
-tar -xf ../linux-$KERNEL.tar.xz &
 echo $GIT_BASE/or1k-src.git \
      $GIT_BASE/or1k-gcc.git \
      $GIT_BASE/or1k-glibc.git \
+     $GIT_BASE/or1k-linux.git \
+     https://github.com/openrisc/or1ksim \
+     https://github.com/openrisc/or1k-dejagnu \
      | xargs -n 1 -P 0 git clone
-wait
 
-ln -sf linux-$KERNEL linux
+ln -sf or1k-linux linux
 
 echo "Building .."
-make
+export PATH="$PATH:/srv/compilers/openrisc-devel/bin"
 
+make linux
+make root
+make or1ksim
 
 echo "Testing .."
+cd tests
+./run.sh
 
 echo "Testing done, halting machine"
 halt

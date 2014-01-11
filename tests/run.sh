@@ -7,10 +7,7 @@ fi
 
 cd `dirname $0`
 echo "Starting simulator .."
-screen -dmS openrisc-sim /usr/local/bin/sim -f or1ksim-tcp.cfg vmlinux
-sleep 2
-echo "Configuring network .."
-sudo ip link set up dev tap0
-sudo ip addr add 192.168.255.201/24 dev tap0
 
-echo "Done"
+
+(sleep 2; ip link set up dev tap0; ip addr add 172.16.0.1/24 dev tap0) &
+/usr/local/bin/sim -f or1ksim-tcp.cfg ../linux/vmlinux
