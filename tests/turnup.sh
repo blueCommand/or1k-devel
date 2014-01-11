@@ -8,7 +8,7 @@ echo "Running OpenRISC regression turnup on $HOST with repos @ $GIT_BASE"
 
 sudo apt-get update
 sudo apt-get install --yes screen git wget build-essential texinfo flex bison \
-  libmpc-dev gawk bc expect
+  libmpc-dev gawk bc expect nfs-kernel-server
 
 sudo chown $USER.$USER /srv
 
@@ -18,6 +18,7 @@ sudo mount none -t tmpfs /srv/build
 
 echo "Cloning .."
 
+cd /srv
 git clone $GIT_BASE/or1k-devel.git
 
 cd or1k-devel
@@ -42,11 +43,18 @@ make root
 make or1ksim
 make dejagnu
 
-echo "Testing .."
+echo "/srv/or1k-devel/initramfs 172.16.0.2(rw,sync,no_root_squash,no_subtree_check)" \
+  | sudo tee -a /etc/exports
+sudo service nfs-kernel-server restart
+
 cd tests
 mkdir -p ~/.ssh
 cat ssh_config >> ~/.ssh/config
 ./run.sh &> /tmp/simulator.log &
+echo "Waiting 60 s for the simulator instance to come up .."
+sleep 60
+
+echo "Testing .."
 make test
 
 echo "Testing done, halting machine"

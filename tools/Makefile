@@ -8,7 +8,8 @@ BUILDDIR=/srv/build
 BUILD=x86_64-linux-gnu
 TARGET=or1k-linux-gnu
 
-.PHONY: ncurses zsh zsh-static zlib openssl openssh busybox all download
+.PHONY: ncurses zsh zsh-static zlib openssl openssh busybox strace
+.PHONY: all download
 
 all: ncurses zsh zlib openssl openssh busybox
 
@@ -22,6 +23,7 @@ all: ncurses zsh zlib openssl openssh busybox
 	 http://www.mpfr.org/mpfr-current/mpfr-3.1.2.tar.xz \
 	 http://www.multiprecision.org/mpc/download/mpc-1.0.1.tar.gz \
 	 http://busybox.net/downloads/busybox-1.22.0.tar.bz2 \
+	 http://netcologne.dl.sourceforge.net/project/strace/strace/4.8/strace-4.8.tar.xz \
 	 | xargs -n 1 -P 0 wget
 	echo *.tar.* | xargs -n 1 -P 0 tar -xf
 	wget -O config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
@@ -125,4 +127,13 @@ mpc: download gmp mpfr
 	  make ${MAKEOPTS} && \
 	  make DESTDIR=${INITRAMFS} install && \
 	  make DESTDIR=${SYSROOT} install)
+
+strace: download
+	rm -fr ${BUILDDIR}/build-strace
+	mkdir ${BUILDDIR}/build-strace
+	(cd ${BUILDDIR}/build-strace && \
+	  ${SRCDIR}/strace-4.8/configure --host=${TARGET} \
+	    --build=${BUILD} --prefix=/ && \
+	  make ${MAKEOPTS} && \
+	  make DESTDIR=${INITRAMFS} install)
 
