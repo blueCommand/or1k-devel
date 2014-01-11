@@ -35,6 +35,8 @@ ln -sf or1k-linux linux
 echo "Building .."
 export PATH="$PATH:/srv/compilers/openrisc-devel/bin"
 
+ssh-keygen -N '' -f ~/.ssh/or1ksim
+
 make linux
 make root
 make or1ksim
