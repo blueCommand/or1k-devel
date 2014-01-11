@@ -2,6 +2,8 @@
 INITRAMFS=${PWD}/../initramfs
 SYSROOT=/srv/compilers/openrisc-devel/or1k-linux-gnu/sys-root/
 SRCDIR=${PWD}
+MAKEOPTS=-j$(shell grep -E "^processor" /proc/cpuinfo | tail -n 1 | cut -f 2 -d ' ')
+BUILDDIR=/srv/build
 
 BUILD=x86_64-linux-gnu
 TARGET=or1k-linux-gnu
@@ -29,41 +31,41 @@ all: ncurses zsh zlib openssl openssh busybox
 download: .download-stamp
 
 ncurses: download
-	rm -fr /tmp/build-ncurses
-	mkdir /tmp/build-ncurses
+	rm -fr ${BUILDDIR}/build-ncurses
+	mkdir ${BUILDDIR}/build-ncurses
 	cp config.guess config.sub ${SRCDIR}/ncurses-5.9/
-	(cd /tmp/build-ncurses && \
+	(cd ${BUILDDIR}/build-ncurses && \
 	  ${SRCDIR}/ncurses-5.9/configure --host=${TARGET} \
 	    --build=${BUILD} --prefix=/usr && \
-	  make -j && \
+	  make ${MAKEOPTS} && \
 	  make DESTDIR=${INITRAMFS} install && \
 	  make DESTDIR=${SYSROOT} install)
 
 zsh: download ncurses
-	rm -fr /tmp/build-zsh
-	mkdir /tmp/build-zsh
+	rm -fr ${BUILDDIR}/build-zsh
+	mkdir ${BUILDDIR}/build-zsh
 	cp config.guess config.sub ${SRCDIR}/zsh-5.0.5/
-	(cd /tmp/build-zsh && \
+	(cd ${BUILDDIR}/build-zsh && \
 	  ${SRCDIR}/zsh-5.0.5/configure --host=${TARGET} \
 	    --build=${BUILD} --prefix=/usr && \
-	  make -j && \
+	  make ${MAKEOPTS} && \
 	  cp Src/zsh ${INITRAMFS}/usr/bin/)
 
 zsh-static: download ncurses
-	rm -fr /tmp/build-zsh
-	mkdir /tmp/build-zsh
+	rm -fr ${BUILDDIR}/build-zsh
+	mkdir ${BUILDDIR}/build-zsh
 	cp config.guess config.sub ${SRCDIR}/zsh-5.0.5/
-	(cd /tmp/build-zsh && \
+	(cd ${BUILDDIR}/build-zsh && \
 	  LDFLAGS="-static -s" ${SRCDIR}/zsh-5.0.5/configure --host=${TARGET} \
 	    --build=${BUILD} --prefix=/usr && \
-	  make -j && \
+	  make ${MAKEOPTS} && \
 	  cp Src/zsh ${INITRAMFS}/usr/bin/)
 
 zlib: download
 	(cd zlib-1.2.8 && \
 	  (make clean || true) && \
 	  CC=${TARGET}-gcc CXX=${TARGET}-gcc ./configure --prefix=/usr && \
-	  make -j && \
+	  make ${MAKEOPTS} && \
 	  make DESTDIR=${INITRAMFS} install && \
 	  make DESTDIR=${SYSROOT} install)
 
@@ -76,51 +78,51 @@ openssl: download zlib
 	  make INSTALL_PREFIX=${SYSROOT} install_sw)
 
 openssh: download zlib
-	rm -fr /tmp/build-openssh
-	mkdir /tmp/build-openssh
+	rm -fr ${BUILDDIR}/build-openssh
+	mkdir ${BUILDDIR}/build-openssh
 	cp config.guess config.sub ${SRCDIR}/openssh-6.4p1/
-	(cd /tmp/build-openssh && \
+	(cd ${BUILDDIR}/build-openssh && \
 	  ${SRCDIR}/openssh-6.4p1/configure --host=${TARGET} \
 	    --build=${BUILD} --prefix=/usr --sysconfdir=/etc/ssh && \
-	  sed -i '/^STRIP_OPT=/d' /tmp/build-openssh/Makefile && \
-	  make -j && \
+	  sed -i '/^STRIP_OPT=/d' ${BUILDDIR}/build-openssh/Makefile && \
+	  make ${MAKEOPTS} && \
 	  make DESTDIR=${INITRAMFS} install)
 
 busybox: download
 	cp Busybox-config busybox-1.22.0/.config
-	(cd busybox-1.22.0 && make clean && make -j && make install)
+	(cd busybox-1.22.0 && make clean && make ${MAKEOPTS} && make install)
 
 # These are used for building native gcc, not built by default
 gmp: download
-	rm -fr /tmp/build-gmp
-	mkdir /tmp/build-gmp
-	(cd /tmp/build-gmp && \
+	rm -fr ${BUILDDIR}/build-gmp
+	mkdir ${BUILDDIR}/build-gmp
+	(cd ${BUILDDIR}/build-gmp && \
 	  ${SRCDIR}/gmp-5.1.1/configure --host=${TARGET} \
 	    --build=${BUILD} --prefix=/ && \
-	  make -j && \
+	  make ${MAKEOPTS} && \
 	  make DESTDIR=${INITRAMFS} install && \
 	  make DESTDIR=${SYSROOT} install)
 
 mpfr: download gmp
-	rm -fr /tmp/build-mpfr
-	mkdir /tmp/build-mpfr
-	(cd /tmp/build-mpfr && \
+	rm -fr ${BUILDDIR}/build-mpfr
+	mkdir ${BUILDDIR}/build-mpfr
+	(cd ${BUILDDIR}/build-mpfr && \
 	  ${SRCDIR}/mpfr-3.1.2/configure --host=${TARGET} \
 	   --with-gmp=${INITRAMFS}/ \
 	    --build=${BUILD} --prefix=/ && \
-	  make -j && \
+	  make ${MAKEOPTS} && \
 	  make DESTDIR=${INITRAMFS} install && \
 	  make DESTDIR=${SYSROOT} install)
 
 mpc: download gmp mpfr
-	rm -fr /tmp/build-mpc
-	mkdir /tmp/build-mpc
-	(cd /tmp/build-mpc && \
+	rm -fr ${BUILDDIR}/build-mpc
+	mkdir ${BUILDDIR}/build-mpc
+	(cd ${BUILDDIR}/build-mpc && \
 	  ${SRCDIR}/mpc-1.0.1/configure --host=${TARGET} \
 	    --build=${BUILD} --prefix=/ \
 	   --with-gmp=${INITRAMFS}/ \
 	   --with-mpfr=${INITRAMFS}/ && \
-	  make -j && \
+	  make ${MAKEOPTS} && \
 	  make DESTDIR=${INITRAMFS} install && \
 	  make DESTDIR=${SYSROOT} install)
 

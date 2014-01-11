@@ -162,7 +162,7 @@ CONFIG_NEED_PER_CPU_KM=y
 # CONFIG_CMA is not set
 # CONFIG_ZBUD is not set
 CONFIG_OPENRISC_NO_SPR_SR_DSX=y
-CONFIG_CMDLINE="root=/dev/nfs nfsroot=172.16.0.1:/srv/work/initramfs ip=172.16.0.2:172.16.0.1:172.16.0.1:255.255.255.0:or1k::off:8.8.8.8:8.8.4.4"
+CONFIG_CMDLINE=""
 
 #
 # Debugging options

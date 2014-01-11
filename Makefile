@@ -1,7 +1,10 @@
 TARGET=or1k-linux-gnu
-TARGET_REG=or1k-linux-gnu
 ARCH=openrisc
 DIR=${PWD}
+BUILDDIR=/srv/build
+MAKEOPTS=-j$(shell grep -E "^processor" /proc/cpuinfo | tail -n 1 | cut -f 2 -d ' ')
+
+# Enable if playing with the linker
 #EXTRA_BINUTILS="--enable-cgen-maint"
 
 NATIVE_TARGET=x86_64-linux
@@ -12,8 +15,8 @@ clean:
 	(cd linux/; ARHC="openrisc" make clean)
 	rm -fr /srv/compilers/openrisc-devel/*
 	rm -f .building .*-stamp || true
-	rm -fr /tmp/build-*
-	rm -fr ${DIR}/../initramfs/lib ${DIR}/../initramfs/usr/lib
+	rm -fr ${BUILDDIR}/build-*
+	rm -fr ${DIR}/initramfs/lib ${DIR}/initramfs/usr/lib
 
 binutils: .binutils-stamp
 boot-gcc: .boot-gcc-stamp
@@ -32,28 +35,28 @@ gdbserver: .gdbserver-stamp
 
 .binutils-stamp:
 	echo "$(@)" > .building
-	rm -fr /tmp/build-or1k-src
-	mkdir /tmp/build-or1k-src
-	(cd /tmp/build-or1k-src && \
+	rm -fr ${BUILDDIR}/build-or1k-src
+	mkdir ${BUILDDIR}/build-or1k-src
+	(cd ${BUILDDIR}/build-or1k-src && \
 	${DIR}/or1k-src/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
 		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
 		--with-sysroot --disable-newlib --disable-libgloss ${EXTRA_BINUTILS} && \
-	make -j && \
+	make ${MAKEOPTS} && \
 	make install)
 	touch $(@)
 
 .boot-gcc-stamp: .binutils-stamp
 	echo "$(@)" > .building
-	rm -fr /tmp/build-or1k-gcc
-	mkdir /tmp/build-or1k-gcc
-	(cd /tmp/build-or1k-gcc && \
+	rm -fr ${BUILDDIR}/build-or1k-gcc
+	mkdir ${BUILDDIR}/build-or1k-gcc
+	(cd ${BUILDDIR}/build-or1k-gcc && \
 	${DIR}/or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--disable-libssp --disable-decimal-float --enable-vtable-verify \
 		--enable-languages=c --without-headers \
 		--enable-threads=single --disable-libgomp --disable-libmudflap \
 		--disable-shared --disable-libquadmath --disable-libatomic && \
-	make -j && \
+	make ${MAKEOPTS} && \
 	make install)
 	touch $(@)
 
@@ -61,56 +64,58 @@ gdbserver: .gdbserver-stamp
 	echo "$(@)" > .building
 	cd linux && \
 	make ARCH="${ARCH}" INSTALL_HDR_PATH=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr headers_install && \
-	make ARCH="${ARCH}" INSTALL_HDR_PATH=${DIR}/../initramfs/usr headers_install
+	make ARCH="${ARCH}" INSTALL_HDR_PATH=${DIR}/initramfs/usr headers_install
 	touch $(@)
 
 .glibc-stamp: .linux-headers-stamp .boot-gcc-stamp
 	echo "$(@)" > .building
-	rm -fr /tmp/build-or1k-glibc
-	mkdir /tmp/build-or1k-glibc
-	(cd /tmp/build-or1k-glibc && \
+	rm -fr ${BUILDDIR}/build-or1k-glibc
+	mkdir ${BUILDDIR}/build-or1k-glibc
+	(cd ${BUILDDIR}/build-or1k-glibc && \
 	${DIR}/or1k-glibc/configure --host=${TARGET} \
 		--prefix=/usr \
 		--with-headers=/srv/compilers/openrisc-devel/${TARGET}/sys-root/usr/include && \
-	make -C ${DIR}/or1k-glibc/locale -r objdir="/tmp/build-or1k-glibc" C-translit.h && \
-	make -j && \
+	make -C ${DIR}/or1k-glibc/locale -r objdir="${BUILDDIR}/build-or1k-glibc" C-translit.h && \
+	make ${MAKEOPTS} && \
 	make install_root=/srv/compilers/openrisc-devel/${TARGET}/sys-root install -j && \
-	make install_root=${DIR}/../initramfs install -j)
+	make install_root=${DIR}/initramfs install -j)
 	touch $(@)
 
 .gcc-stamp: .glibc-stamp
 	echo "$(@)" > .building
-	rm -fr /tmp/build-or1k-gcc
-	mkdir /tmp/build-or1k-gcc
-	(cd /tmp/build-or1k-gcc && \
+	rm -fr ${BUILDDIR}/build-or1k-gcc
+	mkdir ${BUILDDIR}/build-or1k-gcc
+	(cd ${BUILDDIR}/build-or1k-gcc && \
 	${DIR}/or1k-gcc/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--enable-languages=c,c++ --enable-threads=posix \
-		--disable-libgomp --disable-libmudflap \
+		--disable-libgomp --disable-libmudflap --enable-vtable-verify \
 		--with-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root --disable-multilib && \
-	make -j && \
+	make ${MAKEOPTS} && \
 	make install)
-	cp -aR /srv/compilers/openrisc-devel/${TARGET}/lib/*.so* ${DIR}/../initramfs/lib/
-	${TARGET}-strip ${DIR}/../initramfs/lib/*.so* || true
+	cp -aR /srv/compilers/openrisc-devel/${TARGET}/lib/*.so* ${DIR}/initramfs/lib/
+	${TARGET}-strip ${DIR}/initramfs/lib/*.so* || true
 	touch $(@)
 
 .dejagnu-stamp:
 	echo "$(@)" > .building
-	rm -fr /tmp/build-or1k-dejagnu
-	mkdir /tmp/build-or1k-dejagnu
-	(cd /tmp/build-or1k-dejagnu && \
-	${DIR}/or1k-dejagnu/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-test &&\
-	make -j && \
+	rm -fr ${BUILDDIR}/build-or1k-dejagnu
+	mkdir ${BUILDDIR}/build-or1k-dejagnu
+	(cd ${BUILDDIR}/build-or1k-dejagnu && \
+	${DIR}/or1k-dejagnu/configure --target=${TARGET} \
+		--prefix=/srv/compilers/openrisc-devel &&\
+	make ${MAKEOPTS} && \
 	make install)
-	cp -v regression/or1k-linux-sim.exp /srv/compilers/openrisc-test/share/dejagnu/baseboards/
+	cp -v tests/or1k-linux-sim.exp \
+		/srv/compilers/openrisc-devel/share/dejagnu/baseboards/
 	touch $(@)
 
 .or1ksim-stamp:
 	echo "$(@)" > .building
-	rm -fr /tmp/build-or1ksim
-	mkdir /tmp/build-or1ksim
-	(cd /tmp/build-or1ksim && \
+	rm -fr ${BUILDDIR}/build-or1ksim
+	mkdir ${BUILDDIR}/build-or1ksim
+	(cd ${BUILDDIR}/build-or1ksim && \
 	${DIR}/or1ksim/configure && \
-	make -j && sudo make install)
+	make ${MAKEOPTS} && sudo make install)
 	touch $(@)
 
 .root-stamp: .gcc-stamp
@@ -118,36 +123,37 @@ gdbserver: .gdbserver-stamp
 	(cd tools && make)
 	touch $(@)
 
-.linux-stamp: .root-stamp
+.linux-stamp: .boot-gcc-stamp
 	echo "$(@)" > .building
 	cp Linux-config linux/.config
 	sed -i 's/elf32-or32/elf32-or1k/g' linux/arch/openrisc/kernel/vmlinux.lds*
+	cp or1ksim.dts linux/arch/openrisc/boot/dts/
 	(cd linux && \
-	ARCH="openrisc" make -j7)
+	ARCH="openrisc" make ${MAKEOPTS})
 	touch $(@)
 
 # (2014-01-05, bluecmd) GDB do not work as of yet
 .gdb-stamp:
 	echo "$(@)" > .building
-	rm -fr /tmp/build-or1k-gdb
-	mkdir /tmp/build-or1k-gdb
-	(cd /tmp/build-or1k-gdb && \
+	rm -fr ${BUILDDIR}/build-or1k-gdb
+	mkdir ${BUILDDIR}/build-or1k-gdb
+	(cd ${BUILDDIR}/build-or1k-gdb && \
 	${DIR}/or1k-src/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--disable-tk --disable-tcl --disable-itcl --disable-libgui --disable-werror && \
-	make -j all-bfd && \
-	make -j all-gdb && \
+	make ${MAKEOPTS} all-bfd && \
+	make ${MAKEOPTS} all-gdb && \
 	make install-gdb)
 	touch $(@)
 
 # (2014-01-05, bluecmd) GDB do not work as of yet
 .gdbserver-stamp:
 	echo "$(@)" > .building
-	rm -fr /tmp/build-or1k-gdbserver
-	mkdir /tmp/build-or1k-gdbserver
-	(cd /tmp/build-or1k-gdbserver && \
+	rm -fr ${BUILDDIR}/build-or1k-gdbserver
+	mkdir ${BUILDDIR}/build-or1k-gdbserver
+	(cd ${BUILDDIR}/build-or1k-gdbserver && \
 	${DIR}/or1k-src/gdb/gdbserver/configure --host=${TARGET} \
 		--prefix=/srv/compilers/openrisc-devel \
 		--disable-werror && \
-	make -j && \
+	make ${MAKEOPTS} && \
 	make install)
 	touch $(@)
