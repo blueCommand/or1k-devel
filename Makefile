@@ -121,6 +121,14 @@ gdbserver: .gdbserver-stamp
 .root-stamp: .gcc-stamp
 	echo "$(@)" > .building
 	(cd tools && make)
+	(cd initramfs/; mkdir -p dev proc sys mnt tmp srv)
+	sudo ssh-keygen -f initramfs/etc/ssh/ssh_host_rsa_key -C or1k -N '' -t rsa
+	sudo ssh-keygen -f initramfs/etc/ssh/ssh_host_dsa_key -C or1k -N '' -t dsa
+	sudo ssh-keygen -f initramfs/etc/ssh/ssh_host_dsa_key -C or1k -N '' -t ecdsa
+	rmdir initramfs/var/empty
+	sudo mkdir initramfs/var/empty
+	sudo mkdir -p initramfs/root/.ssh
+	sudo cp ~/.ssh/id_rsa.pub initramfs/root/.ssh/authorized_keys
 	touch $(@)
 
 .linux-stamp: .boot-gcc-stamp

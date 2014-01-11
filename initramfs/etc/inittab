@@ -1,0 +1,11 @@
+::sysinit:/etc/init.d/rcS
+::askfirst:-/usr/bin/zsh
+
+# Stuff to do when restarting the init process
+::restart:/sbin/init
+
+# Stuff to do before rebooting
+::ctrlaltdel:/sbin/reboot
+::shutdown:/etc/shutdown
+
+

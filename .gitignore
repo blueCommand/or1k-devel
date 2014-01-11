@@ -5,7 +5,16 @@
 .building
 linux
 linux-*
-initramfs
+initramfs/bin
+initramfs/etc/rpc
+initramfs/etc/ssh
+initramfs/etc/ssl
+initramfs/lib
+initramfs/linuxrc
+initramfs/root
+initramfs/sbin
+initramfs/usr
+initramfs/var
 or1k-*
 or1ksim
 uClibc-or1k
