@@ -1,0 +1,9 @@
+Host 172.16.0.2
+    BatchMode yes
+    UserKnownHostsFile /dev/null
+    CheckHostIP no
+    StrictHostKeyChecking no
+    ControlMaster no
+    ControlPath "/tmp/or1ksim"
+    User root
+

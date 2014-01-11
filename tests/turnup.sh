@@ -38,10 +38,14 @@ export PATH="$PATH:/srv/compilers/openrisc-devel/bin"
 make linux
 make root
 make or1ksim
+make dejagnu
 
 echo "Testing .."
 cd tests
-./run.sh
+mkdir -p ~/.ssh
+cat ssh_config >> ~/.ssh/config
+./run.sh &> /tmp/simulator.log &
+make test
 
 echo "Testing done, halting machine"
 halt

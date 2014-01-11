@@ -105,7 +105,7 @@ gdbserver: .gdbserver-stamp
 		--prefix=/srv/compilers/openrisc-devel &&\
 	make ${MAKEOPTS} && \
 	make install)
-	cp -v tests/or1k-linux-sim.exp \
+	ln -sf ${DIR}/tests/or1k-linux-sim.exp \
 		/srv/compilers/openrisc-devel/share/dejagnu/baseboards/
 	touch $(@)
 
@@ -122,9 +122,10 @@ gdbserver: .gdbserver-stamp
 	echo "$(@)" > .building
 	(cd tools && make)
 	(cd initramfs/; mkdir -p dev proc sys mnt tmp srv)
+	sudo rm -f initramfs/etc/ssh/ssh_host_*
 	sudo ssh-keygen -f initramfs/etc/ssh/ssh_host_rsa_key -C or1k -N '' -t rsa
 	sudo ssh-keygen -f initramfs/etc/ssh/ssh_host_dsa_key -C or1k -N '' -t dsa
-	sudo ssh-keygen -f initramfs/etc/ssh/ssh_host_dsa_key -C or1k -N '' -t ecdsa
+	sudo ssh-keygen -f initramfs/etc/ssh/ssh_host_ecdsa_key -C or1k -N '' -t ecdsa
 	rmdir initramfs/var/empty
 	sudo mkdir initramfs/var/empty
 	sudo mkdir -p initramfs/root/.ssh
