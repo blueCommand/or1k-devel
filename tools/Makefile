@@ -14,17 +14,18 @@ TARGET=or1k-linux-gnu
 all: ncurses zsh zlib openssl openssh busybox
 
 .download-stamp:
-	echo ftp://invisible-island.net/ncurses/ncurses-5.9.tar.gz \
-	 http://zlib.net/zlib-1.2.8.tar.gz \
-	 http://www.openssl.org/source/openssl-1.0.1e.tar.gz \
-	 http://www.zsh.org/pub/zsh-5.0.5.tar.bz2 \
-	 http://ftp.eu.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-6.4p1.tar.gz \
-	 https://gmplib.org/download/gmp/gmp-5.1.3.tar.xz \
-	 http://www.mpfr.org/mpfr-current/mpfr-3.1.2.tar.xz \
-	 http://www.multiprecision.org/mpc/download/mpc-1.0.1.tar.gz \
-	 http://busybox.net/downloads/busybox-1.22.0.tar.bz2 \
-	 http://netcologne.dl.sourceforge.net/project/strace/strace/4.8/strace-4.8.tar.xz \
-	 | xargs -n 1 -P 0 wget
+	echo ncurses-5.9.tar.gz \
+		zlib-1.2.8.tar.gz \
+		openssl-1.0.1e.tar.gz \
+		zsh-5.0.5.tar.bz2 \
+		openssh-6.4p1.tar.gz \
+		gmp-5.1.3.tar.xz \
+		mpfr-3.1.2.tar.xz \
+		mpc-1.0.1.tar.gz \
+		busybox-1.22.0.tar.bz2 \
+		strace-4.8.tar.xz \
+		| xargs -I {} -n 1 -P 0 -d ' ' wget \
+			https://commondatastorage.googleapis.com/bluecmd-openrisc/mirror/{}
 	echo *.tar.* | xargs -n 1 -P 0 tar -xf
 	wget -O config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
 	wget -O config.sub 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'

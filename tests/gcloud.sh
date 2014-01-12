@@ -6,9 +6,7 @@ cd $(dirname $0)
 PROJECT="bluecmd0"
 NAME="openrisc-regression1"
 ZONE="europe-west1-b"
-#MACHINE="n1-highcpu-8"
-# TODO(bluecmd): until we can use all 8, use -2
-MACHINE="n1-standard-2"
+MACHINE="n1-highcpu-8"
 GIT_BASE="https://github.com/bluecmd"
 
 eval $(ssh-agent)

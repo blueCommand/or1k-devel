@@ -8,7 +8,8 @@ echo "Running OpenRISC regression turnup on $HOST with repos @ $GIT_BASE"
 
 sudo apt-get update
 sudo apt-get install --yes screen git wget build-essential texinfo flex bison \
-  libmpc-dev gawk bc expect nfs-kernel-server isc-dhcp-server bridge-utils
+  libmpc-dev gawk bc expect nfs-kernel-server isc-dhcp-server bridge-utils \
+  autogen
 
 sudo service isc-dhcp-server stop || true
 
