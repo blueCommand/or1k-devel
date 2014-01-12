@@ -29,9 +29,11 @@ root: .root-stamp
 linux: .linux-stamp
 gdb: .gdb-stamp
 gdbserver: .gdbserver-stamp
+binutils-native: .binutils-native-stamp
+gcc-native: .gcc-native-stamp
 
 .PHONY: all clean binutils boot-gcc linux-headers glibc gcc dejagnu
-.PHONY: or1ksim root linux gdb gdbserver
+.PHONY: or1ksim root linux gdb gdbserver binutils-native gcc-native
 
 .binutils-stamp:
 	echo "$(@)" > .building
@@ -94,6 +96,36 @@ gdbserver: .gdbserver-stamp
 	make install)
 	cp -aR /srv/compilers/openrisc-devel/${TARGET}/lib/*.so* ${DIR}/initramfs/lib/
 	${TARGET}-strip ${DIR}/initramfs/lib/*.so* || true
+	touch $(@)
+
+.binutils-native-stamp: .gcc-stamp
+	echo "$(@)" > .building
+	rm -fr ${BUILDDIR}/build-or1k-src-native
+	mkdir ${BUILDDIR}/build-or1k-src-native
+	(cd ${BUILDDIR}/build-or1k-src-native && \
+	${DIR}/or1k-src/configure --host=${TARGET} --target=${TARGET} \
+		--prefix=/usr \
+		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
+		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
+		--with-sysroot --disable-newlib --disable-libgloss --disable-werror && \
+	make ${MAKEOPTS} && \
+	make DESTDIR=${DIR}/initramfs/ install)
+	touch $(@)
+
+.gcc-native-stamp: .gcc-stamp .binutils-native-stamp
+	echo "$(@)" > .building
+	rm -fr ${BUILDDIR}/build-or1k-gcc-native
+	mkdir ${BUILDDIR}/build-or1k-gcc-native
+	(cd ${BUILDDIR}/build-or1k-gcc-native && \
+	${DIR}/or1k-gcc/configure --target=${TARGET} --host=${TARGET} --prefix=/usr \
+		--enable-languages=c,c++ --enable-threads=posix --disable-lto --enable-static \
+		--disable-libgomp --disable-libmudflap --enable-vtable-verify \
+		--with-sysroot=/ --with-gmp=${DIR}/initramfs/ \
+		--with-mpc=${DIR}/initramfs/ \
+		--with-mpfr=${DIR}/initramfs/ \
+		--with-build-sysroot=/srv/compilers/openrisc-devel/${TARGET}/sys-root && \
+	make ${MAKEOPTS} && \
+	make DESTDIR=${DIR}/initramfs/ install)
 	touch $(@)
 
 .dejagnu-stamp:

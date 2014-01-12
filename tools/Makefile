@@ -98,34 +98,38 @@ busybox: download
 gmp: download
 	rm -fr ${BUILDDIR}/build-gmp
 	mkdir ${BUILDDIR}/build-gmp
+	cp config.guess config.sub ${SRCDIR}/gmp-5.1.3/
 	(cd ${BUILDDIR}/build-gmp && \
-	  ${SRCDIR}/gmp-5.1.1/configure --host=${TARGET} \
+	  ${SRCDIR}/gmp-5.1.3/configure --host=${TARGET} \
 	    --build=${BUILD} --prefix=/ && \
 	  make ${MAKEOPTS} && \
-	  make DESTDIR=${INITRAMFS} install && \
+	  make DESTDIR=${INITRAMFS}/ install && \
 	  make DESTDIR=${SYSROOT} install)
 
 mpfr: download gmp
 	rm -fr ${BUILDDIR}/build-mpfr
 	mkdir ${BUILDDIR}/build-mpfr
+	cp config.guess config.sub ${SRCDIR}/mpfr-3.1.2/
 	(cd ${BUILDDIR}/build-mpfr && \
 	  ${SRCDIR}/mpfr-3.1.2/configure --host=${TARGET} \
 	   --with-gmp=${INITRAMFS}/ \
 	    --build=${BUILD} --prefix=/ && \
 	  make ${MAKEOPTS} && \
-	  make DESTDIR=${INITRAMFS} install && \
+	  make DESTDIR=${INITRAMFS}/ install && \
 	  make DESTDIR=${SYSROOT} install)
 
-mpc: download gmp mpfr
+mpc: download mpfr gmp
 	rm -fr ${BUILDDIR}/build-mpc
 	mkdir ${BUILDDIR}/build-mpc
+	cp config.guess config.sub ${SRCDIR}/mpc-1.0.1/
 	(cd ${BUILDDIR}/build-mpc && \
 	  ${SRCDIR}/mpc-1.0.1/configure --host=${TARGET} \
 	    --build=${BUILD} --prefix=/ \
 	   --with-gmp=${INITRAMFS}/ \
 	   --with-mpfr=${INITRAMFS}/ && \
+		patch -p0 < ${SRCDIR}/mpc.patch && \
 	  make ${MAKEOPTS} && \
-	  make DESTDIR=${INITRAMFS} install && \
+	  make DESTDIR=${INITRAMFS}/ install && \
 	  make DESTDIR=${SYSROOT} install)
 
 strace: download

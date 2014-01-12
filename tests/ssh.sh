@@ -7,10 +7,21 @@
 # Kill the master by creating /tmp/stop
 
 exec &> /dev/null
-nohup ssh -o ControlMaster=yes 172.16.0.2 \
-  'sh -c "rm -f /tmp/stop; while [ ! -f /tmp/stop ]; do sleep 60; done"' &
 
-while [ ! -S /tmp/or1ksim ]
+# I can't think of a better way than doing this :(
+:> ~/.ssh/config
+
+for IP in $(cat instances | sort -u)
 do
-  sleep 1
+  cat ssh_config | sed "s/OR1K_IP/$IP/g" >> ~/.ssh/config
+  nohup ssh -o ControlMaster=yes $IP \
+    'sh -c "rm -f /tmp/stop; while [ ! -f /tmp/stop ]; do sleep 60; done"' &
+done
+
+for IP in $(cat instances | sort -u)
+do
+  while [ ! -S /tmp/or1ksim-$IP ]
+  do
+    sleep 1
+  done
 done

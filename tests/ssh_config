@@ -1,10 +1,10 @@
-Host 172.16.0.2
+Host OR1K_IP
     BatchMode yes
     UserKnownHostsFile /dev/null
     CheckHostIP no
     StrictHostKeyChecking no
     ControlMaster no
-    ControlPath "/tmp/or1ksim"
+    ControlPath "/tmp/or1ksim-OR1K_IP"
     IdentityFile ~/.ssh/or1ksim
     User root
 

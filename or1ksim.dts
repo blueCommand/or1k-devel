@@ -6,7 +6,7 @@
 	interrupt-parent = <&pic>;
 
 	chosen {
-		bootargs = "console=uart,mmio,0x90000000,115200 root=/dev/nfs nfsroot=172.16.0.1:/srv/or1k-devel/initramfs ip=172.16.0.2:172.16.0.1:172.16.0.1:255.255.255.0:or1k::off:8.8.8.8:8.8.4.4";
+		bootargs = "console=uart,mmio,0x90000000,115200 root=/dev/nfs nfsroot=172.16.0.1:/srv/or1k-devel/initramfs ip=::::or1k::dhcp::";
 	};
 
 	memory@0 {

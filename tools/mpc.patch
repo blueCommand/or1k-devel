@@ -1,0 +1,12 @@
+--- libtool	2014-01-12 10:06:49.266489122 +0000
++++ libtool	2014-01-12 10:06:23.994489468 +0000
+@@ -9712,6 +9712,9 @@
+ 		func_basename "$deplib"
+ 		name="$func_basename_result"
+ 		func_resolve_sysroot "$deplib"
++		if [ "$func_resolve_sysroot_result" = "//lib/libgmp.la" ]; then
++			func_resolve_sysroot_result="/srv/or1k-devel/initramfs/lib/libgmp.la"
++		fi
+ 		eval libdir=`${SED} -n -e 's/^libdir=\(.*\)$/\1/p' $func_resolve_sysroot_result`
+ 		test -z "$libdir" && \
+ 		  func_fatal_error "\`$deplib' is not a valid libtool archive"

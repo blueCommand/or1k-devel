@@ -13,4 +13,10 @@ mdev -s
 
 /usr/sbin/sshd
 
+echo "Mounting development environment .."
+mount -t tmpfs tmpfs /srv
+mkdir /srv/build /srv/or1k-devel
+mount 172.16.0.1:/srv/build /srv/build -o nolock
+mount 172.16.0.1:/srv/or1k-devel /srv/or1k-devel -o nolock
+
 echo "Startup complete"
