@@ -133,8 +133,13 @@ copy:
         l.nop
 
         # Show progress on UART
-        l.jal putc
-        l.ori r10, r0, '.'
+	l.andi 	r8, r6, 0xff
+	l.sfeqi r8, 0
+	l.bnf   1f
+	 l.nop
+	l.jal   putc
+	 l.ori   r10, r0, '.'
+1:
 
 	l.sfeq 	r6, r7           /* Check if we've finished loading the words */
 	l.bnf 	copy             /* Continue copying if not last word */
