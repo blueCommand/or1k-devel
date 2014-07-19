@@ -41,7 +41,7 @@ gcc-native: .gcc-native-stamp
 	rm -fr ${BUILDDIR}/build-or1k-src
 	mkdir ${BUILDDIR}/build-or1k-src
 	(cd ${BUILDDIR}/build-or1k-src && \
-	${DIR}/or1k-src/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
+	${DIR}/binutils-gdb/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
 		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
 		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
 		--with-sysroot --disable-newlib --disable-libgloss ${EXTRA_BINUTILS} && \
@@ -104,7 +104,7 @@ gcc-native: .gcc-native-stamp
 	rm -fr ${BUILDDIR}/build-or1k-src-native
 	mkdir ${BUILDDIR}/build-or1k-src-native
 	(cd ${BUILDDIR}/build-or1k-src-native && \
-	${DIR}/or1k-src/configure --host=${TARGET} --target=${TARGET} \
+	${DIR}/binutils-gdb/configure --host=${TARGET} --target=${TARGET} \
 		--prefix=/usr \
 		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
 		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
