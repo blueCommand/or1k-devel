@@ -11,12 +11,14 @@ mount -t sysfs sysfs /sys
 echo /sbin/mdev > /proc/sys/kernel/hotplug
 mdev -s
 
+fsck /dev/vda
+mount -o remount,rw /
+mount -a
+
 /usr/sbin/sshd
 
-echo "Mounting development environment .."
-mount -t tmpfs tmpfs /srv
-mkdir /srv/build /srv/or1k-devel
-mount 172.16.0.1:/srv/build /srv/build -o nolock
-mount 172.16.0.1:/srv/or1k-devel /srv/or1k-devel -o nolock
+/sbin/ip link set up dev eth0
+/sbin/ip link
+/sbin/udhcpc
 
 echo "Startup complete"
