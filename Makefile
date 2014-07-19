@@ -25,6 +25,7 @@ glibc: .glibc-stamp
 gcc: .gcc-stamp
 dejagnu: .dejagnu-stamp
 or1ksim: .or1ksim-stamp
+qemu: .qemu-stamp
 root: .root-stamp
 linux: .linux-stamp
 gdb: .gdb-stamp
@@ -33,7 +34,7 @@ binutils-native: .binutils-native-stamp
 gcc-native: .gcc-native-stamp
 
 .PHONY: all clean binutils boot-gcc linux-headers glibc gcc dejagnu
-.PHONY: or1ksim root linux gdb gdbserver binutils-native gcc-native
+.PHONY: or1ksim root linux gdb gdbserver binutils-native gcc-native qemu
 
 .binutils-stamp:
 	echo "$(@)" > .building
@@ -147,6 +148,15 @@ gcc-native: .gcc-native-stamp
 	mkdir ${BUILDDIR}/build-or1ksim
 	(cd ${BUILDDIR}/build-or1ksim && \
 	${DIR}/or1ksim/configure && \
+	make ${MAKEOPTS} && sudo make install)
+	touch $(@)
+
+.qemu-stamp:
+	echo "$(@)" > .building
+	rm -fr ${BUILDDIR}/build-qemu
+	mkdir ${BUILDDIR}/build-qemu
+	(cd ${BUILDDIR}/build-qemu && \
+	${DIR}/or1k-qemu/configure  --enable-virtfs --target-list=or32-softmmu && \
 	make ${MAKEOPTS} && sudo make install)
 	touch $(@)
 
