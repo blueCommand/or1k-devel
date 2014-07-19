@@ -11,8 +11,11 @@ mount -t sysfs sysfs /sys
 echo /sbin/mdev > /proc/sys/kernel/hotplug
 mdev -s
 
+hostname openrisc
+
 fsck /dev/vda
 mount -o remount,rw /
+mkdir -p /home/bluecmd/or1k-devel /srv/build
 mount -a
 
 /usr/sbin/sshd
@@ -20,5 +23,8 @@ mount -a
 /sbin/ip link set up dev eth0
 /sbin/ip link
 /sbin/udhcpc
+
+echo "Getting time from NTP ..."
+/usr/sbin/ntpd -n -q -p ntp1.sp.se
 
 echo "Startup complete"

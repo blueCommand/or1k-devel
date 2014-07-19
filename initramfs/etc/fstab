@@ -1,1 +1,3 @@
 /dev/vda / ext4    errors=remount-ro 0       1
+devel    /home/bluecmd/or1k-devel 9p trans=virtio 0 0
+build    /srv/build 9p trans=virtio 0 0

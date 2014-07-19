@@ -161,7 +161,7 @@ gcc-native: .gcc-native-stamp
 	rmdir initramfs/var/empty
 	sudo mkdir initramfs/var/empty
 	sudo mkdir -p initramfs/root/.ssh
-	sudo cp ~/.ssh/or1ksim.pub initramfs/root/.ssh/authorized_keys
+	sudo cp ~/.ssh/id_rsa.pub initramfs/root/.ssh/authorized_keys
 	touch $(@)
 
 .linux-stamp: .boot-gcc-stamp
