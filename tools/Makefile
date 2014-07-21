@@ -2,7 +2,7 @@
 INITRAMFS=${PWD}/../initramfs
 SYSROOT=/srv/compilers/openrisc-devel/or1k-linux-gnu/sys-root/
 SRCDIR=${PWD}
-MAKEOPTS=-j$(shell grep -E "^processor" /proc/cpuinfo | tail -n 1 | cut -f 2 -d ' ')
+MAKEOPTS=-j$(shell ls /sys/bus/cpu/devices/ | wc -l)
 BUILDDIR=/srv/build
 
 BUILD=x86_64-linux-gnu
