@@ -9,7 +9,7 @@ sudo apt-get update
 sudo apt-get install --yes screen git wget build-essential texinfo flex bison \
   libmpc-dev gawk bc expect isc-dhcp-server bridge-utils \
   autogen dejagnu
-sudo apt-get build-dep qemu
+sudo apt-get build-dep --yes qemu
 
 sudo service isc-dhcp-server stop || true
 
@@ -58,8 +58,6 @@ ln -sf or1k-linux linux
 
 echo "Building .."
 export PATH="$PATH:/srv/compilers/openrisc-devel/bin"
-
-(cd linux; git checkout smp)
 
 make linux
 make qemu
