@@ -2,7 +2,7 @@ TARGET=or1k-linux-gnu
 ARCH=openrisc
 DIR=${PWD}
 BUILDDIR=/srv/build
-MAKEOPTS=-j$(shell grep -E "^processor" /proc/cpuinfo | tail -n 1 | cut -f 2 -d ' ')
+MAKEOPTS=-j$(shell ls /sys/bus/cpu/devices/ | wc -l)
 
 # Enable if playing with the linker
 #EXTRA_BINUTILS="--enable-cgen-maint"
