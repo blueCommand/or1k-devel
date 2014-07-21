@@ -1,7 +1,7 @@
 TARGET=or1k-linux-gnu
 BUILDDIR=/srv/build
-INSTANCES=4
-JOBS=4
+INSTANCES=1
+JOBS=1
 PARALLEL=$(shell echo ${INSTANCES} \* ${JOBS} | bc)
 SRCDIR=${PWD}
 

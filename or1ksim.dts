@@ -6,12 +6,12 @@
 	interrupt-parent = <&pic>;
 
 	chosen {
-		bootargs = "console=uart,mmio,0x90000000,115200 root=/dev/nfs nfsroot=172.16.0.1:/srv/or1k-devel/initramfs ip=::::or1k::dhcp::";
+		bootargs = "console=uart,mmio,0x90000000,115200 root=/dev/vda";
 	};
 
 	memory@0 {
 		device_type = "memory";
-		reg = <0x00000000 0x02000000>;
+		reg = <0x00000000 0x3f000000>;
 	};
 
 	cpus {
@@ -20,8 +20,32 @@
 		cpu@0 {
 			compatible = "opencores,or1200-rtlsvn481";
 			reg = <0>;
-			clock-frequency = <20000000>;
+			clock-frequency = <200000000>;
 		};
+	};
+
+	virtio_block@93000000 {
+		compatible = "virtio,mmio";
+		reg = <0x93000000 0x100>;
+		interrupts = <9>;
+	};
+
+	virtio_block@93000200 {
+		compatible = "virtio,mmio";
+		reg = <0x93000200 0x100>;
+		interrupts = <10>;
+	};
+
+	virtio_block@93000400 {
+		compatible = "virtio,mmio";
+		reg = <0x93000400 0x100>;
+		interrupts = <11>;
+	};
+
+	virtio_block@93000600 {
+		compatible = "virtio,mmio";
+		reg = <0x93000600 0x100>;
+		interrupts = <12>;
 	};
 
 	/*
@@ -39,7 +63,7 @@
 		compatible = "opencores,uart16550-rtlsvn105", "ns16550a";
 		reg = <0x90000000 0x100>;
 		interrupts = <2>;
-		clock-frequency = <20000000>;
+		clock-frequency = <200000000>;
 	};
 
 	enet0: ethoc@92000000 {
@@ -47,4 +71,5 @@
 		reg = <0x92000000 0x100>;
 		interrupts = <4>;
 	};
+
 };

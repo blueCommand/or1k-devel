@@ -6,7 +6,7 @@ load_generic_config "unix"
 
 # Set up remote target info. We select the IP address using an external
 # program which knows about all available Linuxes.
-set linux_hostname [exec /srv/or1k-devel/tests/get-ip.sh --rotate]
+set linux_hostname [exec /srv/or1k-devel/tests/get-ip.sh]
 set_board_info hostname $linux_hostname
 set_board_info username root
 
