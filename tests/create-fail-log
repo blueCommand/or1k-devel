@@ -1,0 +1,16 @@
+#!/usr/bin/awk -f
+
+/^WARNING/ { warn=1 }
+/^Segmentation fault/ { segfault=1 }
+/^XPASS|^FAIL/ {
+  printf "%s", $0;
+  if (warn) {
+    print " (timeout)";
+    warn=0;
+  }
+  else if (segfault) {
+    print " (segfault)";
+    segfault=0;
+  } else
+    print ""
+}

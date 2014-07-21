@@ -19,7 +19,9 @@ test-gcc:
 	(export PATH="/srv/compilers/openrisc-devel/bin:${PATH}" && \
 	 cd ${BUILDDIR}/build-or1k-gcc && \
 		 make -j${PARALLEL} check-c RUNTESTFLAGS="--target_board=or1k-linux-sim")
-	# TODO(bluecmd): kill ssh instances
+	cp -v /srv/build/build-or1k-gcc/gcc/testsuite/gcc/gcc.{log,sum} /tmp/
+	./create-fail-log /tmp/gcc.log > /tmp/gcc.fail
+	gsutil cp /tmp/gcc.* gs://bluecmd-openrisc/gcc/$(shell date +'%Y-%m-%d_%H:%M')/
 
 test-glibc:
 	# TODO(blucmd): maybe we can use -j here to do things in parallel

@@ -6,10 +6,11 @@ GIT_BASE=${1?}
 echo "Running OpenRISC regression turnup on $HOST with repos @ $GIT_BASE"
 
 sudo apt-get update
-sudo apt-get install --yes screen git wget build-essential texinfo flex bison \
+sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade --yes
+sudo DEBIAN_FRONTEND=noninteractive apt-get install --yes screen git wget build-essential texinfo flex bison \
   libmpc-dev gawk bc expect isc-dhcp-server bridge-utils \
   autogen dejagnu
-sudo apt-get build-dep --yes qemu
+sudo DEBIAN_FRONTEND=noninteractive apt-get build-dep --yes qemu
 
 sudo service isc-dhcp-server stop || true
 
@@ -38,6 +39,16 @@ mkdir -p /srv/build
 sudo mount none -t tmpfs /srv/build
 
 ssh-keygen -N '' -f ~/.ssh/id_rsa
+
+tee /home/bluecmd/.ssh/config << _EOF_
+Host 172.16.0.*
+  ConnectTimeout 300
+  BatchMode yes
+  StrictHostKeyChecking no
+_EOF_
+sudo mkdir /root/.ssh
+sudo chmod 700 /root/.ssh
+sudo cp /home/bluecmd/.ssh/config /root/.ssh
 
 echo "Cloning .."
 
@@ -70,9 +81,13 @@ sudo chown bluecmd.bluecmd initramfs/
 git checkout initramfs/
 
 make root
+sudo umount initramfs/
+
 sudo cp tests/or1k-linux-sim.exp /usr/share/dejagnu/baseboards
 
 echo "Starting simulator .."
+sudo sysctl -w net.ipv4.conf.all.forwarding=1
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 sudo screen -dmS qemu-sim tests/qemu-system /srv/build/root.img
 
 echo "Waiting for simulator .."
