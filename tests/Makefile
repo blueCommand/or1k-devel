@@ -22,7 +22,7 @@ test-gcc:
 	cp -v /srv/build/build-or1k-gcc/gcc/testsuite/gcc/gcc.log /tmp/
 	cp -v /srv/build/build-or1k-gcc/gcc/testsuite/gcc/gcc.sum /tmp/
 	./create-fail-log /tmp/gcc.log > /tmp/gcc.fail
-	gsutil cp /tmp/gcc.* gs://bluecmd-openrisc/gcc/$(shell date +'%Y-%m-%d_%H:%M')/
+	gsutil cp /tmp/gcc.* gs://bluecmd-openrisc/gcc/$(shell date +'%Y-%m-%d_%H:%M')-$(shell hostname)/
 
 test-glibc:
 	# TODO(blucmd): maybe we can use -j here to do things in parallel
