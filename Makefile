@@ -1,6 +1,6 @@
 TARGET=or1k-linux-gnu
 ARCH=openrisc
-DIR=${PWD}
+DIR=$(CURDIR)
 BUILDDIR=/srv/build
 MAKEOPTS=-j$(shell ls /sys/bus/cpu/devices/ | wc -l)
 
