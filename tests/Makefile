@@ -19,7 +19,8 @@ test-gcc:
 	(export PATH="/srv/compilers/openrisc-devel/bin:${PATH}" && \
 	 cd ${BUILDDIR}/build-or1k-gcc && \
 		 make -j${PARALLEL} check-c RUNTESTFLAGS="--target_board=or1k-linux-sim")
-	cp -v /srv/build/build-or1k-gcc/gcc/testsuite/gcc/gcc.{log,sum} /tmp/
+	cp -v /srv/build/build-or1k-gcc/gcc/testsuite/gcc/gcc.log /tmp/
+	cp -v /srv/build/build-or1k-gcc/gcc/testsuite/gcc/gcc.sum /tmp/
 	./create-fail-log /tmp/gcc.log > /tmp/gcc.fail
 	gsutil cp /tmp/gcc.* gs://bluecmd-openrisc/gcc/$(shell date +'%Y-%m-%d_%H:%M')/
 

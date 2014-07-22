@@ -36,7 +36,7 @@ sudo chown $USER.$USER /srv
 
 mkdir -p /srv/compilers
 mkdir -p /srv/build
-sudo mount none -t tmpfs /srv/build
+sudo mount none -t tmpfs /srv/build -o size=2800M
 
 ssh-keygen -N '' -f ~/.ssh/id_rsa
 

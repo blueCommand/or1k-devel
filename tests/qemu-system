@@ -6,7 +6,7 @@ IMAGE=$1
 
 qemu-system-or32 -drive if=none,file=$IMAGE,id=hda \
     -device virtio-blk-device,drive=hda \
-    -m 2048 -nographic \
+    -m 1024 -nographic \
     -kernel ${BASE}/linux/vmlinux \
     -net nic,model=opencores_eth -net tap,name=or1k,script=${BASE}/tests/qemu-net-up \
     -fsdev local,id=devel,path=${BASE},security_model=passthrough \
