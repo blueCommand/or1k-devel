@@ -1,7 +1,7 @@
 
-INITRAMFS=${PWD}/../initramfs
+INITRAMFS=$(CURDIR)/../initramfs
 SYSROOT=/srv/compilers/openrisc-devel/or1k-linux-gnu/sys-root/
-SRCDIR=${PWD}
+SRCDIR=$(CURDIR)
 MAKEOPTS=-j$(shell ls /sys/bus/cpu/devices/ | wc -l)
 BUILDDIR=/srv/build
 
