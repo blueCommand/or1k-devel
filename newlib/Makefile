@@ -23,13 +23,12 @@ gcc: .gcc-stamp
 
 .binutils-stamp:
 	echo "$(@)" > .building
-	rm -fr ${BUILDDIR}/build-or1k-src
-	mkdir ${BUILDDIR}/build-or1k-src
-	(cd ${BUILDDIR}/build-or1k-src && \
-	${SRCDIR}/newlib/or1k-src/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
-		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
-		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
-		--with-sysroot --disable-newlib --disable-libgloss ${EXTRA_BINUTILS} && \
+	rm -fr ${BUILDDIR}/build-or1k-binutils
+	mkdir ${BUILDDIR}/build-or1k-binutils
+	(cd ${BUILDDIR}/build-or1k-binutils && \
+	${SRCDIR}/binutils-gdb/configure --target=${TARGET} \
+		--prefix=/srv/compilers/openrisc-devel \
+		--with-sysroot ${EXTRA_BINUTILS} && \
 	make ${MAKEOPTS} && \
 	make install)
 	touch $(@)
@@ -52,10 +51,8 @@ gcc: .gcc-stamp
 	rm -fr ${BUILDDIR}/build-or1k-newlib
 	mkdir ${BUILDDIR}/build-or1k-newlib
 	(cd ${BUILDDIR}/build-or1k-newlib && \
-	${SRCDIR}/newlib/or1k-src/configure --target=${TARGET} --prefix=/srv/compilers/openrisc-devel \
-		--disable-shared --disable-itcl --disable-tk --disable-tcl --disable-winsup \
-		--disable-libgui --disable-rda --disable-sid --disable-sim --disable-gdb \
-		--with-sysroot --enable-newlib --enable-libgloss ${EXTRA_BINUTILS} && \
+	${SRCDIR}/newlib/newlib/configure --target=${TARGET} \
+		--prefix=/srv/compilers/openrisc-devel && \
 	make ${MAKEOPTS} && \
 	make install)
 	touch $(@)
