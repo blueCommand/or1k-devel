@@ -14,7 +14,7 @@ TARGET=or1k-linux-gnu
 all: ncurses zsh zlib openssl openssh busybox
 
 .download-stamp:
-	echo ncurses-5.9.tar.gz \
+	echo ncurses-6.0.tar.gz \
 		zlib-1.2.8.tar.gz \
 		openssl-1.0.1e.tar.gz \
 		zsh-5.0.5.tar.bz2 \
@@ -36,9 +36,9 @@ download: .download-stamp
 ncurses: download
 	rm -fr ${BUILDDIR}/build-ncurses
 	mkdir ${BUILDDIR}/build-ncurses
-	cp config.guess config.sub ${SRCDIR}/ncurses-5.9/
+	cp config.guess config.sub ${SRCDIR}/ncurses-6.0/
 	(cd ${BUILDDIR}/build-ncurses && \
-	  ${SRCDIR}/ncurses-5.9/configure --host=${TARGET} \
+	  ${SRCDIR}/ncurses-6.0/configure --host=${TARGET} \
 	    --build=${BUILD} --prefix=/usr && \
 	  make ${MAKEOPTS} && \
 	  make DESTDIR=${INITRAMFS} install && \

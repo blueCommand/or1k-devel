@@ -156,7 +156,8 @@ gcc-native: .gcc-native-stamp
 	rm -fr ${BUILDDIR}/build-qemu
 	mkdir ${BUILDDIR}/build-qemu
 	(cd ${BUILDDIR}/build-qemu && \
-	${DIR}/or1k-qemu/configure  --enable-virtfs --target-list=or32-softmmu && \
+	${DIR}/or1k-qemu/configure  --enable-virtfs --static \
+		--target-list=or32-softmmu,or32-linux-user && \
 	make ${MAKEOPTS} && sudo make install)
 	touch $(@)
 
