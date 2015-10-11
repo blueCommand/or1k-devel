@@ -6,7 +6,7 @@
 	interrupt-parent = <&pic>;
 
 	chosen {
-		bootargs = "console=uart,mmio,0x90000000,115200 root=/dev/vda";
+		bootargs = "console=uart,mmio,0x90000000,115200 ro rootfstype=9p rootflags=trans=virtio";
 	};
 
 	memory@0 {

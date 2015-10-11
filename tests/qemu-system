@@ -4,12 +4,13 @@ BASE=$(dirname $0)/..
 BUILD=/srv/build
 IMAGE=$1
 
-qemu-system-or32 -drive if=none,file=$IMAGE,id=hda \
-    -device virtio-blk-device,drive=hda \
+qemu-system-or32 \
     -m 1024 -nographic \
     -kernel ${BASE}/linux/vmlinux \
     -net nic,model=opencores_eth -net tap,name=or1k,script=${BASE}/tests/qemu-net-up \
+    -fsdev local,id=r,path=${BASE}/initramfs,security_model=passthrough,readonly \
+    -device virtio-9p-device,mount_tag=/dev/root,fsdev=r \
     -fsdev local,id=devel,path=${BASE},security_model=passthrough \
-    -device virtio-9p-device,mount_tag=devel,fsdev=devel \
+    -device virtio-9p-device,mount_tag=aaaadevel,fsdev=devel \
     -fsdev local,id=build,path=${BUILD},security_model=passthrough \
-    -device virtio-9p-device,mount_tag=build,fsdev=build
+    -device virtio-9p-device,mount_tag=aaaabuild,fsdev=build

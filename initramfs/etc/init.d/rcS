@@ -12,19 +12,13 @@ echo /sbin/mdev > /proc/sys/kernel/hotplug
 mdev -s
 
 hostname openrisc
-
-fsck /dev/vda
-mount -o remount,rw /
-mkdir -p /home/bluecmd/or1k-devel /srv/build
 mount -a
 
 /usr/sbin/sshd
 
+/sbin/ip addr add 192.168.1.2/24 dev eth0
 /sbin/ip link set up dev eth0
-/sbin/ip link
-/sbin/udhcpc
 
-echo "Getting time from NTP ..."
-/usr/sbin/ntpd -n -q -p ntp1.sp.se
+/simexecd &
 
 echo "Startup complete"
